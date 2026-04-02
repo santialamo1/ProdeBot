@@ -20,7 +20,7 @@ MONGODB_DB = os.getenv("MONGODB_DB", "worldcup_bot")
 # ══════════════════════════════════════
 WC2026_API_KEY = os.getenv("WC2026_API_KEY")
 WC2026_BASE_URL = "https://api.wc2026api.com"
-ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 # ══════════════════════════════════════
 #           CANALES
@@ -62,4 +62,4 @@ POINTS_QUINIELA_ONE = 2    # Acertar uno de los dos
 
 # Sync con API
 FIXTURE_SYNC_HOURS = 6      # Cada cuántas horas sincronizar el fixture
-LIVE_POLL_SECONDS = 120     # Cada cuántos segundos hacer polling durante partidos live
+LIVE_POLL_SECONDS = 120     # Cada cuántos segundos hacer polling durante partidos livepy

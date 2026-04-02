@@ -11,23 +11,104 @@ COLOR_DANGER = 0xE74C3C     # Rojo
 COLOR_LIVE = 0xFF4136       # Rojo vivo para partidos en curso
 COLOR_GOLD = 0xF1C40F       # Dorado para rankings
 
-# Emojis de banderas por código de equipo
+# Emojis de banderas por nombre completo en inglés (tal como los devuelve la API)
 FLAG_EMOJIS = {
-    "ARG": "🇦🇷", "BRA": "🇧🇷", "FRA": "🇫🇷", "ENG": "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
-    "ESP": "🇪🇸", "GER": "🇩🇪", "ITA": "🇮🇹", "POR": "🇵🇹",
-    "NED": "🇳🇱", "BEL": "🇧🇪", "URU": "🇺🇾", "MEX": "🇲🇽",
-    "USA": "🇺🇸", "CAN": "🇨🇦", "JAP": "🇯🇵", "KOR": "🇰🇷",
-    "MAR": "🇲🇦", "SEN": "🇸🇳", "CMR": "🇨🇲", "GHA": "🇬🇭",
-    "CRO": "🇭🇷", "SRB": "🇷🇸", "SUI": "🇨🇭", "DEN": "🇩🇰",
-    "POL": "🇵🇱", "AUS": "🇦🇺", "ECU": "🇪🇨", "COL": "🇨🇴",
-    "CHI": "🇨🇱", "PER": "🇵🇪", "VEN": "🇻🇪", "PAR": "🇵🇾",
-    "BOL": "🇧🇴", "HON": "🇭🇳", "PAN": "🇵🇦", "COS": "🇨🇷",
-    "SAU": "🇸🇦", "IRN": "🇮🇷", "QAT": "🇶🇦", "IRQ": "🇮🇶",
-    "AUT": "🇦🇹", "TUR": "🇹🇷", "SWE": "🇸🇪", "NOR": "🇳🇴",
-    "NGA": "🇳🇬", "CIV": "🇨🇮", "EGY": "🇪🇬", "TUN": "🇹🇳",
-    "ALG": "🇩🇿", "ZAF": "🇿🇦", "COD": "🇨🇩", "NZL": "🇳🇿",
-    "SLO": "🇸🇮", "SVK": "🇸🇰", "CZE": "🇨🇿", "GRE": "🇬🇷",
-    "BIH": "🇧🇦",
+    # América del Sur
+    "Argentina": "🇦🇷",
+    "Brazil": "🇧🇷",
+    "Uruguay": "🇺🇾",
+    "Colombia": "🇨🇴",
+    "Ecuador": "🇪🇨",
+    "Venezuela": "🇻🇪",
+    "Paraguay": "🇵🇾",
+    "Bolivia": "🇧🇴",
+    "Chile": "🇨🇱",
+    "Peru": "🇵🇪",
+    # América del Norte y Central
+    "Mexico": "🇲🇽",
+    "USA": "🇺🇸",
+    "United States": "🇺🇸",
+    "Canada": "🇨🇦",
+    "Honduras": "🇭🇳",
+    "Panama": "🇵🇦",
+    "Costa Rica": "🇨🇷",
+    "Jamaica": "🇯🇲",
+    # Europa
+    "France": "🇫🇷",
+    "England": "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
+    "Spain": "🇪🇸",
+    "Germany": "🇩🇪",
+    "Italy": "🇮🇹",
+    "Portugal": "🇵🇹",
+    "Netherlands": "🇳🇱",
+    "Belgium": "🇧🇪",
+    "Croatia": "🇭🇷",
+    "Serbia": "🇷🇸",
+    "Switzerland": "🇨🇭",
+    "Denmark": "🇩🇰",
+    "Poland": "🇵🇱",
+    "Austria": "🇦🇹",
+    "Turkey": "🇹🇷",
+    "Sweden": "🇸🇪",
+    "Norway": "🇳🇴",
+    "Slovakia": "🇸🇰",
+    "Slovenia": "🇸🇮",
+    "Czechia": "🇨🇿",
+    "Czech Republic": "🇨🇿",
+    "Greece": "🇬🇷",
+    "Bosnia-Herzegovina": "🇧🇦",
+    "Bosnia and Herzegovina": "🇧🇦",
+    "Ukraine": "🇺🇦",
+    "Scotland": "🏴󠁧󠁢󠁳󠁣󠁴󠁿",
+    "Wales": "🏴󠁧󠁢󠁷󠁬󠁳󠁿",
+    "Hungary": "🇭🇺",
+    "Romania": "🇷🇴",
+    "Albania": "🇦🇱",
+    "Georgia": "🇬🇪",
+    # África
+    "Morocco": "🇲🇦",
+    "Senegal": "🇸🇳",
+    "Cameroon": "🇨🇲",
+    "Ghana": "🇬🇭",
+    "Nigeria": "🇳🇬",
+    "Ivory Coast": "🇨🇮",
+    "Egypt": "🇪🇬",
+    "Tunisia": "🇹🇳",
+    "Algeria": "🇩🇿",
+    "South Africa": "🇿🇦",
+    "DR Congo": "🇨🇩",
+    "Congo DR": "🇨🇩",
+    "Mali": "🇲🇱",
+    "Burkina Faso": "🇧🇫",
+    "Cape Verde": "🇨🇻",
+    "Tanzania": "🇹🇿",
+    "Uganda": "🇺🇬",
+    "Zimbabwe": "🇿🇼",
+    # Asia y Oceanía
+    "Japan": "🇯🇵",
+    "Korea Republic": "🇰🇷",
+    "South Korea": "🇰🇷",
+    "Saudi Arabia": "🇸🇦",
+    "Iran": "🇮🇷",
+    "Qatar": "🇶🇦",
+    "Iraq": "🇮🇶",
+    "Australia": "🇦🇺",
+    "China": "🇨🇳",
+    "Uzbekistan": "🇺🇿",
+    "Jordan": "🇯🇴",
+    "Indonesia": "🇮🇩",
+    "New Zealand": "🇳🇿",
+    "Oman": "🇴🇲",
+    "Bahrain": "🇧🇭",
+    "UAE": "🇦🇪",
+    "United Arab Emirates": "🇦🇪",
+    # Nombres exactos de la API que difieren
+    "IR Iran": "🇮🇷",
+    "Cabo Verde": "🇨🇻",
+    "Curaçao": "🇨🇼",
+    "Côte d'Ivoire": "🇨🇮",
+    "Haiti": "🇭🇹",
+    "Scotland": "🏴󠁧󠁢󠁳󠁣󠁴󠁿",
 }
 
 STADIUM_DATA = {
@@ -96,9 +177,15 @@ STADIUM_DATA = {
 
 def get_flag(team_name: str) -> str:
     """Retorna el emoji de bandera para un equipo."""
-    # Buscar por nombre parcial
-    for code, emoji in FLAG_EMOJIS.items():
-        if code.lower() in team_name.lower() or team_name.lower() in code.lower():
+    if not team_name:
+        return "🏳️"
+    # Lookup exacto primero
+    if team_name in FLAG_EMOJIS:
+        return FLAG_EMOJIS[team_name]
+    # Fallback: búsqueda case-insensitive
+    team_lower = team_name.lower()
+    for name, emoji in FLAG_EMOJIS.items():
+        if name.lower() == team_lower:
             return emoji
     return "🏳️"
 

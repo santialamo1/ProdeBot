@@ -1,7 +1,7 @@
 import discord
 from discord import app_commands
 from discord.ext import commands
-import anthropic
+import openai
 import json
 import asyncio
 import logging
@@ -43,7 +43,7 @@ Reglas:
 class Trivia(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.anthropic_client = anthropic.AsyncAnthropic(api_key=config.ANTHROPIC_API_KEY)
+        self.openai_client = openai.AsyncOpenAI(api_key=config.OPENAI_API_KEY)
         self._active_trivia = False  # Evita que se lancen dos trivias simultáneas
 
     async def _generate_question(self) -> dict | None:
@@ -59,14 +59,16 @@ class Trivia(commands.Cog):
                 avoid = "\n- ".join(recent_questions[:10])
                 user_prompt += f"\n\nEvitá preguntas similares a estas ya usadas:\n- {avoid}"
 
-            message = await self.anthropic_client.messages.create(
-                model="claude-haiku-4-5-20251001",
+            message = await self.openai_client.chat.completions.create(
+                model="gpt-4o-mini",
                 max_tokens=500,
-                system=TRIVIA_SYSTEM_PROMPT,
-                messages=[{"role": "user", "content": user_prompt}],
+                messages=[
+                    {"role": "system", "content": TRIVIA_SYSTEM_PROMPT},
+                    {"role": "user", "content": user_prompt},
+                ],
             )
 
-            raw = message.content[0].text.strip()
+            raw = message.choices[0].message.content.strip()
             # Limpiar posibles backticks de markdown
             raw = raw.replace("```json", "").replace("```", "").strip()
             question = json.loads(raw)
@@ -84,7 +86,7 @@ class Trivia(commands.Cog):
             log.error(f"Error parseando pregunta de trivia: {e}")
             return None
         except Exception as e:
-            log.error(f"Error generando trivia con Claude: {e}")
+            log.error(f"Error generando trivia con OpenAI: {e}")
             return None
 
     async def post_trivia_question(self):
