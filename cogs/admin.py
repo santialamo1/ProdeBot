@@ -496,6 +496,39 @@ class Admin(commands.Cog):
         import asyncio
         asyncio.create_task(trivia_cog.post_trivia_question())
 
+    @app_commands.command(name="admin_reset_trivia", description="[ADMIN] Resetear historial de preguntas y ranking de trivia")
+    @app_commands.describe(
+        que="Que resetear: 'todo', 'preguntas' o 'ranking'",
+    )
+    @only_admin()
+    async def admin_reset_trivia(self, interaction: discord.Interaction, que: str = "todo"):
+        await interaction.response.defer(ephemeral=True)
+
+        que = que.lower()
+        if que not in ("todo", "preguntas", "ranking"):
+            await interaction.followup.send(
+                "❌ Opción inválida. Usá: `todo`, `preguntas` o `ranking`.",
+                ephemeral=True,
+            )
+            return
+
+        msgs = []
+
+        if que in ("todo", "preguntas"):
+            result = await self.bot.db.trivia.delete_many({})
+            msgs.append(f"🗑️ Historial de preguntas eliminado ({result.deleted_count} preguntas).")
+
+            # Resetear cooldown en memoria
+            trivia_cog = self.bot.get_cog("Trivia")
+            if trivia_cog:
+                trivia_cog._last_trivia_time = None
+
+        if que in ("todo", "ranking"):
+            result = await self.bot.db.trivia_ranking.delete_many({})
+            msgs.append(f"🗑️ Ranking de trivia eliminado ({result.deleted_count} usuarios).")
+
+        await interaction.followup.send("\n".join(msgs), ephemeral=True)
+
 
 async def setup(bot):
     await bot.add_cog(Admin(bot))
