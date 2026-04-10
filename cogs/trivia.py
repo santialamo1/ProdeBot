@@ -53,10 +53,36 @@ class Trivia(commands.Cog):
             recent = await cursor.to_list(length=None)
             recent_questions = [r.get("pregunta", "") for r in recent]
 
+            # Ultimas 20 preguntas con su respuesta correcta
+            cursor_prev = self.bot.db.trivia.find(
+                {}, {"pregunta": 1, "opciones": 1, "respuesta_correcta": 1}
+            ).sort("posted_at", -1).limit(20)
+            prev_docs = await cursor_prev.to_list(length=None)
+
             user_prompt = "Genera una nueva pregunta de trivia sobre el Mundial de futbol."
-            if recent_questions:
-                avoid = "\n- ".join(recent_questions[:10])
-                user_prompt += f"\n\nEvita preguntas similares a estas ya usadas:\n- {avoid}"
+
+            if prev_docs:
+                prev_lines = []
+                for doc in prev_docs:
+                    pregunta = doc.get("pregunta", "")
+                    opciones = doc.get("opciones", [])
+                    idx = doc.get("respuesta_correcta", 0)
+                    respuesta = opciones[idx] if opciones and idx < len(opciones) else ""
+                    if pregunta and respuesta:
+                        prev_lines.append(f"- Pregunta: {pregunta} | Respuesta correcta: {respuesta}")
+
+                if prev_lines:
+                    avoid_str = "\n".join(prev_lines[:15])
+                    user_prompt += f"""
+
+Estas son las ultimas preguntas ya usadas con su respuesta correcta:
+{avoid_str}
+
+IMPORTANTE:
+- No hagas preguntas cuya respuesta correcta sea la misma o muy similar a las de la lista anterior.
+- Por ejemplo si ya se pregunto algo cuya respuesta es "Francia", no hagas otra pregunta cuya respuesta tambien sea "Francia".
+- Tampoco reformules las mismas preguntas con distinta redaccion.
+- Elige un dato o hecho diferente del Mundial que no haya sido la respuesta correcta de ninguna pregunta anterior."""
 
             message = await self.openai_client.chat.completions.create(
                 model="gpt-4o-mini",
@@ -76,6 +102,9 @@ class Trivia(commands.Cog):
             assert "respuesta_correcta" in question
             assert 0 <= question["respuesta_correcta"] <= 3
             assert "explicacion" in question
+            # tema es opcional pero lo usamos si viene
+            if "tema" not in question:
+                question["tema"] = ""
 
             return question
 
@@ -134,6 +163,7 @@ class Trivia(commands.Cog):
                 "opciones": question["opciones"],
                 "respuesta_correcta": question["respuesta_correcta"],
                 "explicacion": question["explicacion"],
+                "tema": question.get("tema", ""),
                 "posted_at": datetime.now(pytz.utc),
                 "ganadores": [],
             })
