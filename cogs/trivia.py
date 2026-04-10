@@ -12,52 +12,51 @@ import config
 
 log = logging.getLogger("worldcup-bot.trivia")
 
-# Emojis para las opciones
 OPTION_EMOJIS = ["🇦", "🇧", "🇨", "🇩"]
 OPTION_LETTERS = ["A", "B", "C", "D"]
 
-# Tiempo en segundos para responder
 TRIVIA_TIMEOUT = 300  # 5 minutos
+TRIVIA_USER_COOLDOWN_HOURS = 1  # Cooldown por usuario para /trivia
 
 TRIVIA_SYSTEM_PROMPT = """Sos un experto en historia y datos del fútbol mundial y la Copa del Mundo FIFA.
 Tu tarea es generar preguntas de trivia interesantes, variadas y precisas sobre el Mundial de fútbol.
 
-Generá UNA pregunta de trivia en el siguiente formato JSON exacto, sin texto adicional, sin markdown:
+Genera UNA pregunta de trivia en el siguiente formato JSON exacto, sin texto adicional, sin markdown:
 {
   "pregunta": "texto de la pregunta",
   "opciones": ["opcion A", "opcion B", "opcion C", "opcion D"],
   "respuesta_correcta": 0,
-  "explicacion": "breve explicación de por qué es correcta (máximo 2 oraciones)"
+  "explicacion": "breve explicacion de por que es correcta (maximo 2 oraciones)"
 }
 
-Donde "respuesta_correcta" es el índice (0-3) de la opción correcta en el array "opciones".
+Donde "respuesta_correcta" es el indice (0-3) de la opcion correcta en el array "opciones".
 
 Reglas:
 - Las preguntas deben ser sobre historia del Mundial FIFA (1930-2022)
-- Variá los temas: goleadores, campeones, estadios, jugadores históricos, récords, curiosidades
+- Varia los temas: goleadores, campeones, estadios, jugadores historicos, records, curiosidades
 - Las opciones incorrectas deben ser plausibles pero claramente incorrectas para alguien que sabe
 - La dificultad debe ser media: ni muy obvia ni muy oscura
-- Escribí todo en español"""
+- Escribe todo en español"""
 
 
 class Trivia(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.openai_client = openai.AsyncOpenAI(api_key=config.OPENAI_API_KEY)
-        self._active_trivia = False  # Evita que se lancen dos trivias simultáneas
+        self._active_trivia = False
+        self._last_trivia_time = None  # Cooldown global para /trivia
 
     async def _generate_question(self) -> dict | None:
-        """Genera una pregunta de trivia usando Claude."""
+        """Genera una pregunta de trivia usando OpenAI."""
         try:
-            # Obtener preguntas ya usadas para evitar repetición
             cursor = self.bot.db.trivia.find({}).sort("posted_at", -1).limit(20)
             recent = await cursor.to_list(length=None)
             recent_questions = [r.get("pregunta", "") for r in recent]
 
-            user_prompt = "Generá una nueva pregunta de trivia sobre el Mundial de fútbol."
+            user_prompt = "Genera una nueva pregunta de trivia sobre el Mundial de futbol."
             if recent_questions:
                 avoid = "\n- ".join(recent_questions[:10])
-                user_prompt += f"\n\nEvitá preguntas similares a estas ya usadas:\n- {avoid}"
+                user_prompt += f"\n\nEvita preguntas similares a estas ya usadas:\n- {avoid}"
 
             message = await self.openai_client.chat.completions.create(
                 model="gpt-4o-mini",
@@ -69,11 +68,9 @@ class Trivia(commands.Cog):
             )
 
             raw = message.choices[0].message.content.strip()
-            # Limpiar posibles backticks de markdown
             raw = raw.replace("```json", "").replace("```", "").strip()
             question = json.loads(raw)
 
-            # Validar estructura
             assert "pregunta" in question
             assert "opciones" in question and len(question["opciones"]) == 4
             assert "respuesta_correcta" in question
@@ -90,12 +87,9 @@ class Trivia(commands.Cog):
             return None
 
     async def post_trivia_question(self):
-        """
-        Genera y postea una pregunta de trivia en el canal correspondiente.
-        Espera 5 minutos, luego revela la respuesta.
-        """
+        """Genera y postea una pregunta. Espera 5 min y revela la respuesta."""
         if self._active_trivia:
-            log.info("Trivia ya activa, saltando esta ejecución")
+            log.info("Trivia ya activa, saltando")
             return
 
         channel = self.bot.get_channel(config.CHANNEL_TRIVIA)
@@ -105,15 +99,14 @@ class Trivia(commands.Cog):
 
         log.info("Generando pregunta de trivia...")
         question = await self._generate_question()
-
         if not question:
             log.error("No se pudo generar la pregunta de trivia")
             return
 
         self._active_trivia = True
+        self._last_trivia_time = datetime.now(pytz.utc)
 
         try:
-            # Construir el embed de la pregunta
             embed = discord.Embed(
                 title="🧠 ¡Trivia Mundial!",
                 description=f"**{question['pregunta']}**",
@@ -130,7 +123,7 @@ class Trivia(commands.Cog):
                 value=f"Tenés **{TRIVIA_TIMEOUT // 60} minutos** para responder reaccionando con el emoji de tu opción.",
                 inline=False,
             )
-            embed.set_footer(text="Mundial 2026 · Trivia — Solo por diversión, sin puntos")
+            embed.set_footer(text="Mundial 2026 · Trivia — Solo por diversión, sin puntos de prode")
 
             msg = await channel.send(embed=embed)
 
@@ -142,45 +135,72 @@ class Trivia(commands.Cog):
                 "respuesta_correcta": question["respuesta_correcta"],
                 "explicacion": question["explicacion"],
                 "posted_at": datetime.now(pytz.utc),
-                "respondieron": [],
+                "ganadores": [],
             })
 
-            # Agregar reacciones de opciones
             for emoji in OPTION_EMOJIS[:len(question["opciones"])]:
                 await msg.add_reaction(emoji)
 
             log.info(f"Trivia posteada: {question['pregunta'][:50]}...")
-
-            # Esperar el tiempo de respuesta
             await asyncio.sleep(TRIVIA_TIMEOUT)
-
-            # Revelar respuesta
             await self._reveal_answer(channel, msg, question)
 
         finally:
             self._active_trivia = False
 
     async def _reveal_answer(self, channel, original_msg: discord.Message, question: dict):
-        """Revela la respuesta correcta y menciona a quienes acertaron."""
+        """Revela la respuesta y actualiza los aciertos en DB."""
         try:
-            # Refrescar el mensaje para ver las reacciones
             msg = await channel.fetch_message(original_msg.id)
         except discord.NotFound:
             return
 
         correct_idx = question["respuesta_correcta"]
         correct_emoji = OPTION_EMOJIS[correct_idx]
-        correct_option = question["opciones"][correct_idx]
 
-        # Obtener quienes reaccionaron correctamente
+        # Recolectar ganadores
         winners = []
         for reaction in msg.reactions:
             if str(reaction.emoji) == correct_emoji:
                 async for user in reaction.users():
                     if not user.bot:
-                        winners.append(user.mention)
+                        winners.append({
+                            "user_id": str(user.id),
+                            "username": user.display_name,
+                        })
 
-        # Construir embed de respuesta
+        # Actualizar aciertos en DB por usuario
+        for winner in winners:
+            await self.bot.db.trivia_ranking.update_one(
+                {"user_id": winner["user_id"]},
+                {"$inc": {"aciertos": 1},
+                 "$set": {"username": winner["username"]},
+                 "$setOnInsert": {"participaciones": 0}},
+                upsert=True,
+            )
+
+        # Sumar participaciones a todos los que reaccionaron
+        all_reactors = set()
+        for reaction in msg.reactions:
+            if str(reaction.emoji) in OPTION_EMOJIS:
+                async for user in reaction.users():
+                    if not user.bot:
+                        all_reactors.add(str(user.id))
+
+        for user_id in all_reactors:
+            await self.bot.db.trivia_ranking.update_one(
+                {"user_id": user_id},
+                {"$inc": {"participaciones": 1}},
+                upsert=True,
+            )
+
+        # Guardar ganadores en el documento de trivia
+        await self.bot.db.trivia.update_one(
+            {"message_id": str(original_msg.id)},
+            {"$set": {"ganadores": [w["username"] for w in winners]}}
+        )
+
+        # Embed de respuesta
         embed = discord.Embed(
             title="✅ ¡Tiempo! — Respuesta revelada",
             description=f"**{question['pregunta']}**",
@@ -195,16 +215,12 @@ class Trivia(commands.Cog):
                 options_text += f"❌ {emoji} {OPTION_LETTERS[i]}. ~~{option}~~\n"
 
         embed.add_field(name="Opciones", value=options_text, inline=False)
-        embed.add_field(
-            name="💡 Explicación",
-            value=question["explicacion"],
-            inline=False,
-        )
+        embed.add_field(name="💡 Explicación", value=question["explicacion"], inline=False)
 
         if winners:
             embed.add_field(
                 name=f"🎉 Acertaron ({len(winners)})",
-                value=" ".join(winners[:20]),  # Máximo 20 menciones
+                value=" ".join([w["username"] for w in winners[:20]]),
                 inline=False,
             )
         else:
@@ -214,17 +230,16 @@ class Trivia(commands.Cog):
                 inline=False,
             )
 
-        embed.set_footer(text="Mundial 2026 · Trivia — Solo por diversión, sin puntos")
+        embed.set_footer(text="Mundial 2026 · Trivia — Usá /trivia_ranking para ver la tabla")
         await channel.send(embed=embed)
-
         log.info(f"Trivia resuelta: {len(winners)} ganadores")
 
     # ──────────────────────────────────────────────────────────
-    #   /trivia (comando manual con cooldown global)
+    #   /trivia — cooldown de 1 hora global
     # ──────────────────────────────────────────────────────────
-    @app_commands.command(name="trivia", description="Lanzar una pregunta de trivia ahora")
+    @app_commands.command(name="trivia", description="Lanzar una pregunta de trivia")
     async def trivia_manual(self, interaction: discord.Interaction):
-        # Solo en el canal de trivia
+        # Solo en canal de trivia
         if interaction.channel_id != config.CHANNEL_TRIVIA:
             await interaction.response.send_message(
                 f"Este comando solo se puede usar en <#{config.CHANNEL_TRIVIA}>",
@@ -232,38 +247,67 @@ class Trivia(commands.Cog):
             )
             return
 
-        # Verificar trivia activa
+        # Trivia ya activa
         if self._active_trivia:
             await interaction.response.send_message(
-                "Ya hay una trivia activa en este momento. Espera que termine!",
+                "⚠️ Ya hay una trivia activa, esperá que termine.",
                 ephemeral=True,
             )
             return
 
-        # Verificar cooldown global
-        last = await self.bot.db.trivia.find_one({}, sort=[("posted_at", -1)])
-        if last:
-            from utils.time_helpers import now_utc
-            posted_at = last["posted_at"]
-            if posted_at.tzinfo is None:
-                posted_at = posted_at.replace(tzinfo=pytz.utc)
-            elapsed = (now_utc() - posted_at).total_seconds() / 3600
-            cooldown_hours = config.TRIVIA_INTERVAL_HOURS
-            remaining = cooldown_hours - elapsed
+        # Cooldown global de 1 hora
+        if self._last_trivia_time:
+            elapsed = (datetime.now(pytz.utc) - self._last_trivia_time).total_seconds() / 3600
+            remaining = TRIVIA_USER_COOLDOWN_HOURS - elapsed
             if remaining > 0:
                 mins = int(remaining * 60)
                 await interaction.response.send_message(
-                    f"La proxima trivia estara disponible en **{mins} minutos**.",
+                    f"⏳ La próxima trivia estará disponible en **{mins} minutos**.",
                     ephemeral=True,
                 )
                 return
 
         await interaction.response.send_message(
-            "Generando pregunta de trivia...",
+            "🧠 Generando pregunta de trivia...",
             ephemeral=True,
         )
-
         asyncio.create_task(self.post_trivia_question())
+
+    # ──────────────────────────────────────────────────────────
+    #   /trivia_ranking
+    # ──────────────────────────────────────────────────────────
+    @app_commands.command(name="trivia_ranking", description="Ver el ranking de aciertos de trivia")
+    async def trivia_ranking(self, interaction: discord.Interaction):
+        await interaction.response.defer()
+
+        cursor = self.bot.db.trivia_ranking.find().sort("aciertos", -1).limit(15)
+        users = await cursor.to_list(length=None)
+
+        if not users:
+            await interaction.followup.send(
+                "📭 Todavía no hay aciertos registrados en la trivia.",
+            )
+            return
+
+        embed = discord.Embed(
+            title="🧠 Ranking de Trivia — Mundial 2026",
+            color=0x9B59B6,
+        )
+
+        medals = ["🥇", "🥈", "🥉"]
+        lines = []
+
+        for i, user in enumerate(users):
+            medal = medals[i] if i < 3 else f"`{i+1}.`"
+            username = user.get("username", "Usuario")
+            aciertos = user.get("aciertos", 0)
+            participaciones = user.get("participaciones", 0)
+            pct = f"{int(aciertos / participaciones * 100)}%" if participaciones > 0 else "0%"
+            lines.append(f"{medal} **{username}** — {aciertos} aciertos | {pct} ({participaciones} respondidas)")
+
+        embed.description = "\n".join(lines)
+        embed.set_footer(text="Mundial 2026 · Trivia — Solo por diversión")
+        await interaction.followup.send(embed=embed)
 
 
 async def setup(bot):
