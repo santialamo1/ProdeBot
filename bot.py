@@ -57,6 +57,7 @@ class WorldCupBot(commands.Bot):
             "cogs.predictions",
             "cogs.stats",
             "cogs.trivia",
+            "cogs.admin",
         ]
         for cog in cogs:
             await self.load_extension(cog)
