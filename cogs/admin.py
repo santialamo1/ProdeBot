@@ -480,5 +480,22 @@ class Admin(commands.Cog):
         )
 
 
+    @app_commands.command(name="admin_trivia", description="[ADMIN] Forzar una trivia sin cooldown")
+    @only_admin()
+    async def admin_trivia(self, interaction: discord.Interaction):
+        trivia_cog = self.bot.get_cog("Trivia")
+        if not trivia_cog:
+            await interaction.response.send_message("Cog de trivia no encontrado.", ephemeral=True)
+            return
+
+        if trivia_cog._active_trivia:
+            await interaction.response.send_message("Ya hay una trivia activa.", ephemeral=True)
+            return
+
+        await interaction.response.send_message("Generando trivia...", ephemeral=True)
+        import asyncio
+        asyncio.create_task(trivia_cog.post_trivia_question())
+
+
 async def setup(bot):
     await bot.add_cog(Admin(bot))

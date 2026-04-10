@@ -220,24 +220,49 @@ class Trivia(commands.Cog):
         log.info(f"Trivia resuelta: {len(winners)} ganadores")
 
     # ──────────────────────────────────────────────────────────
-    #   /trivia (comando manual, solo admins)
+    #   /trivia (comando manual con cooldown global)
     # ──────────────────────────────────────────────────────────
-    @app_commands.command(name="trivia", description="Lanzar una pregunta de trivia ahora (solo admins)")
-    @app_commands.checks.has_permissions(administrator=True)
+    @app_commands.command(name="trivia", description="Lanzar una pregunta de trivia ahora")
     async def trivia_manual(self, interaction: discord.Interaction):
-        if self._active_trivia:
+        # Solo en el canal de trivia
+        if interaction.channel_id != config.CHANNEL_TRIVIA:
             await interaction.response.send_message(
-                "⚠️ Ya hay una trivia activa en este momento.",
+                f"Este comando solo se puede usar en <#{config.CHANNEL_TRIVIA}>",
                 ephemeral=True,
             )
             return
 
+        # Verificar trivia activa
+        if self._active_trivia:
+            await interaction.response.send_message(
+                "Ya hay una trivia activa en este momento. Espera que termine!",
+                ephemeral=True,
+            )
+            return
+
+        # Verificar cooldown global
+        last = await self.bot.db.trivia.find_one({}, sort=[("posted_at", -1)])
+        if last:
+            from utils.time_helpers import now_utc
+            posted_at = last["posted_at"]
+            if posted_at.tzinfo is None:
+                posted_at = posted_at.replace(tzinfo=pytz.utc)
+            elapsed = (now_utc() - posted_at).total_seconds() / 3600
+            cooldown_hours = config.TRIVIA_INTERVAL_HOURS
+            remaining = cooldown_hours - elapsed
+            if remaining > 0:
+                mins = int(remaining * 60)
+                await interaction.response.send_message(
+                    f"La proxima trivia estara disponible en **{mins} minutos**.",
+                    ephemeral=True,
+                )
+                return
+
         await interaction.response.send_message(
-            "🧠 Generando pregunta de trivia...",
+            "Generando pregunta de trivia...",
             ephemeral=True,
         )
 
-        # Lanzar en background para no bloquear
         asyncio.create_task(self.post_trivia_question())
 
 
