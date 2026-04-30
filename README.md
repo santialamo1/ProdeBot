@@ -96,8 +96,8 @@ worldcup-bot/
 ### 1. Clonar el repositorio
 
 ```bash
-git clone https://github.com/tuusuario/worldcup-bot.git
-cd worldcup-bot
+[git clone https://github.com/santialamo1/ProdeBot.git
+cd ProdeBot
 ```
 
 ### 2. Instalar dependencias
