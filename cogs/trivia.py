@@ -36,7 +36,12 @@ Reglas:
 - Varia los temas: goleadores, campeones, estadios, jugadores historicos, records, curiosidades
 - Las opciones incorrectas deben ser plausibles pero claramente incorrectas para alguien que sabe
 - La dificultad debe ser media: ni muy obvia ni muy oscura
-- Escribe todo en español"""
+- Escribe todo en español
+
+IMPORTANTE: 
+- Solo genera preguntas sobre hechos que conoces con absoluta certeza. 
+- Si no estás seguro de un dato específico, elige otro tema. 
+- Nunca inventes nombres, fechas o estadísticas."""
 
 
 class Trivia(commands.Cog):
@@ -85,7 +90,7 @@ IMPORTANTE:
 - Elige un dato o hecho diferente del Mundial que no haya sido la respuesta correcta de ninguna pregunta anterior."""
 
             message = await self.openai_client.chat.completions.create(
-                model="gpt-4o-mini",
+                model="gpt-4o",
                 max_tokens=500,
                 messages=[
                     {"role": "system", "content": TRIVIA_SYSTEM_PROMPT},
