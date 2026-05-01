@@ -52,7 +52,7 @@ Bot de Discord para pronósticos deportivos del Mundial FIFA 2026. Gestiona fixt
 | Base de datos | MongoDB Atlas + motor (async) |
 | Scheduler | APScheduler |
 | API de datos | WC2026API |
-| Trivia | OpenAI GPT-4o-mini |
+| Trivia | OpenAI GPT-4o |
 | Hosting | Railway |
 
 ---
