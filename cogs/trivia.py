@@ -36,12 +36,7 @@ Reglas:
 - Varia los temas: goleadores, campeones, estadios, jugadores historicos, records, curiosidades
 - Las opciones incorrectas deben ser plausibles pero claramente incorrectas para alguien que sabe
 - La dificultad debe ser media: ni muy obvia ni muy oscura
-- Escribe todo en español
-
-IMPORTANTE: 
-- Solo genera preguntas sobre hechos que conoces con absoluta certeza. 
-- Si no estás seguro de un dato específico, elige otro tema. 
-- Nunca inventes nombres, fechas o estadísticas."""
+- Escribe todo en español"""
 
 
 class Trivia(commands.Cog):
@@ -67,27 +62,30 @@ class Trivia(commands.Cog):
             user_prompt = "Genera una nueva pregunta de trivia sobre el Mundial de futbol."
 
             if prev_docs:
-                prev_lines = []
+                prev_preguntas = []
+                prev_temas = []
                 for doc in prev_docs:
                     pregunta = doc.get("pregunta", "")
-                    opciones = doc.get("opciones", [])
-                    idx = doc.get("respuesta_correcta", 0)
-                    respuesta = opciones[idx] if opciones and idx < len(opciones) else ""
-                    if pregunta and respuesta:
-                        prev_lines.append(f"- Pregunta: {pregunta} | Respuesta correcta: {respuesta}")
+                    tema = doc.get("tema", "")
+                    if pregunta:
+                        prev_preguntas.append(f"- {pregunta}")
+                    if tema:
+                        prev_temas.append(tema)
 
-                if prev_lines:
-                    avoid_str = "\n".join(prev_lines[:15])
+                if prev_preguntas:
+                    preguntas_str = "\n".join(prev_preguntas[:15])
                     user_prompt += f"""
 
-Estas son las ultimas preguntas ya usadas con su respuesta correcta:
-{avoid_str}
+Estas son las preguntas ya realizadas — NO las reformules ni hagas preguntas sobre el mismo hecho aunque estén redactadas diferente:
+{preguntas_str}
 
-IMPORTANTE:
-- No hagas preguntas cuya respuesta correcta sea la misma o muy similar a las de la lista anterior.
-- Por ejemplo si ya se pregunto algo cuya respuesta es "Francia", no hagas otra pregunta cuya respuesta tambien sea "Francia".
-- Tampoco reformules las mismas preguntas con distinta redaccion.
-- Elige un dato o hecho diferente del Mundial que no haya sido la respuesta correcta de ninguna pregunta anterior."""
+Elige un hecho o dato del Mundial completamente distinto a los de la lista."""
+
+                if prev_temas:
+                    temas_str = ", ".join(list(dict.fromkeys(prev_temas))[:15])
+                    user_prompt += f"""
+
+Temas ya cubiertos recientemente (elegí uno diferente): {temas_str}"""
 
             message = await self.openai_client.chat.completions.create(
                 model="gpt-4o",
