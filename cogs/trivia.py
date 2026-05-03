@@ -18,25 +18,46 @@ OPTION_LETTERS = ["A", "B", "C", "D"]
 TRIVIA_TIMEOUT = 300  # 5 minutos
 TRIVIA_USER_COOLDOWN_HOURS = 1  # Cooldown por usuario para /trivia
 
-TRIVIA_SYSTEM_PROMPT = """Sos un experto en historia y datos del fútbol mundial y la Copa del Mundo FIFA.
-Tu tarea es generar preguntas de trivia interesantes, variadas y precisas sobre el Mundial de fútbol.
+TRIVIA_SYSTEM_PROMPT = """Sos un generador de trivia sobre la Copa del Mundo FIFA (1930-2022).
 
-Genera UNA pregunta de trivia en el siguiente formato JSON exacto, sin texto adicional, sin markdown:
+Antes de generar la pregunta, seguí estos pasos internamente:
+
+PASO 1 — Tirá un dado mental del 1 al 3 para la dificultad:
+  1 = FÁCIL: dato que cualquier seguidor del fútbol conoce
+      Ejemplos: campeón de un Mundial famoso, sede de un torneo, goleador histórico conocido
+  2 = MEDIA: dato que sabe quien sigue el fútbol con atención
+      Ejemplos: resultado de una final, máximo goleador de un torneo específico, jugador Balón de Oro mundialista
+  3 = DIFÍCIL: dato muy específico que solo saben los fanáticos
+      Ejemplos: cantidad de tarjetas en un partido, jugador expulsado en una final, récord obscuro, dato estadístico preciso
+
+PASO 2 — Tirá un dado mental del 1 al 10 para el tema:
+  1 = Campeones y finalistas
+  2 = Goleadores (de torneos o históricos)
+  3 = Resultados de partidos (finales, semis, goleadas)
+  4 = Sedes y países organizadores
+  5 = Jugadores icónicos y sus logros
+  6 = Disciplina (tarjetas, expulsiones, penales)
+  7 = Porteros y récords defensivos
+  8 = Curiosidades y datos raros verificables
+  9 = Premios individuales (Balón de Oro, Guante de Oro, Bota de Oro)
+  10 = Selecciones (rachas, récords por país)
+
+PASO 3 — Construí la pregunta según la combinación que salió. Si no estás seguro del dato exacto para esa combinación, tirá de nuevo mentalmente.
+
+Devolvé ÚNICAMENTE este JSON sin texto adicional ni markdown:
 {
-  "pregunta": "texto de la pregunta",
+  "pregunta": "la pregunta",
   "opciones": ["opcion A", "opcion B", "opcion C", "opcion D"],
   "respuesta_correcta": 0,
-  "explicacion": "breve explicacion de por que es correcta (maximo 2 oraciones)"
+  "explicacion": "por qué es correcta con contexto preciso",
+  "tema": "el tema que elegiste del paso 2 en 2-3 palabras"
 }
 
-Donde "respuesta_correcta" es el indice (0-3) de la opcion correcta en el array "opciones".
-
-Reglas:
-- Las preguntas deben ser sobre historia del Mundial FIFA (1930-2022)
-- Varia los temas: goleadores, campeones, estadios, jugadores historicos, records, curiosidades
-- Las opciones incorrectas deben ser plausibles pero claramente incorrectas para alguien que sabe
-- La dificultad debe ser media: ni muy obvia ni muy oscura
-- Escribe todo en español"""
+REGLAS FINALES:
+- La respuesta correcta debe ser 100% verificable y correcta
+- Las opciones incorrectas deben ser del mismo tipo que la correcta (otros países, jugadores, números)
+- Nunca mezcles datos de distintas ediciones del Mundial
+- Todo en español"""
 
 
 class Trivia(commands.Cog):
