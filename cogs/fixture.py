@@ -4,11 +4,13 @@ from discord.ext import commands
 import logging
 
 import config
+from utils.checks import only_in_chat, bot_activo
 from db.matches import (
     get_all_matches, get_matches_today, get_matches_by_team,
     get_matches_by_group, get_team_recent_form
 )
 from utils.embeds import build_match_embed, build_daily_matches_embed, get_round_label
+from utils.time_helpers import to_discord_timestamp, to_discord_timestamp_tr
 from utils.time_helpers import format_match_time, format_match_date, format_match_datetime
 import pytz
 from datetime import datetime
@@ -16,19 +18,6 @@ from datetime import datetime
 log = logging.getLogger("worldcup-bot.fixture")
 
 GROUPS = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"]
-
-
-def only_in_chat():
-    """Check que restringe el uso a #mundial-chat."""
-    async def predicate(interaction: discord.Interaction) -> bool:
-        if interaction.channel_id != config.CHANNEL_CHAT:
-            await interaction.response.send_message(
-                f"⚽ Los comandos solo se pueden usar en <#{config.CHANNEL_CHAT}>",
-                ephemeral=True,
-            )
-            return False
-        return True
-    return app_commands.check(predicate)
 
 
 class Fixture(commands.Cog):
@@ -102,13 +91,12 @@ class Fixture(commands.Cog):
 
             if status == "finished":
                 score = match.get("score", {})
-                result = f"**{score.get('home', '?')} - {score.get('away', '?')}** ✅"
-                time_str = result
+                time_str = f"**{score.get('home', '?')} - {score.get('away', '?')}** ✅"
             elif status == "live":
                 score = match.get("score", {})
                 time_str = f"**{score.get('home', '?')} - {score.get('away', '?')}** 🔴 EN VIVO"
             else:
-                time_str = format_match_datetime(kickoff) if kickoff else "Por confirmar"
+                time_str = to_discord_timestamp(kickoff, 'F') if kickoff else "Por confirmar"
 
             embed.add_field(
                 name=f"{home_flag} {home} vs {away} {away_flag}",

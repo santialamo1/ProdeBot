@@ -6,6 +6,7 @@ import pytz
 import config
 from db.matches import get_matches_today, get_upcoming_matches
 from utils.embeds import build_daily_matches_embed, build_match_embed
+from utils.time_helpers import to_discord_timestamp
 from utils.time_helpers import format_match_date, now_utc
 
 log = logging.getLogger("worldcup-bot.daily")
@@ -107,9 +108,15 @@ async def send_reminders(bot):
         home_flag = get_flag(home)
         away_flag = get_flag(away)
 
+        kickoff = match.get("kickoff_utc")
+        if isinstance(kickoff, str):
+            from datetime import datetime
+            kickoff = datetime.fromisoformat(kickoff.replace("Z", "+00:00"))
+
         embed = discord.Embed(
             title="⏰ ¡Partido en 1 hora!",
             description=f"## {home_flag} {home}  vs  {away} {away_flag}\n\n"
+                        f"🕐 {to_discord_timestamp(kickoff, 'R')}\n\n"
                         f"¡Hacé tu pronóstico antes de que cierren! Usá `/pronostico` en #mundial-chat",
             color=0xFF6B35,
         )

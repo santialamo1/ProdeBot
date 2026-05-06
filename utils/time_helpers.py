@@ -61,3 +61,28 @@ def now_utc() -> datetime:
 def now_local() -> datetime:
     """Retorna el datetime actual en hora Argentina."""
     return datetime.now(tz)
+
+
+def to_discord_timestamp(dt: datetime, format: str = "F") -> str:
+    """
+    Convierte un datetime a timestamp de Discord (Hammertime).
+    Cada usuario lo ve en su propia timezone automáticamente.
+
+    Formatos:
+      t = hora corta          → 4:00 PM
+      T = hora larga          → 4:00:00 PM
+      d = fecha corta         → 11/06/2026
+      D = fecha larga         → 11 de junio de 2026
+      f = fecha + hora corta  → 11 de junio de 2026 4:00 PM
+      F = fecha + hora larga  → jueves, 11 de junio de 2026 4:00 PM
+      R = relativo            → en 2 meses
+    """
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=pytz.utc)
+    unix = int(dt.timestamp())
+    return f"<t:{unix}:{format}>"
+
+
+def to_discord_timestamp_tr(dt: datetime) -> str:
+    """Shortcut para hora corta + relativo. Ej: '4:00 PM · en 2 horas'"""
+    return f"{to_discord_timestamp(dt, 't')} · {to_discord_timestamp(dt, 'R')}"

@@ -1,6 +1,6 @@
 import discord
 from datetime import datetime
-from utils.time_helpers import format_match_time, format_match_date, format_match_datetime, utc_to_local
+from utils.time_helpers import format_match_time, format_match_date, format_match_datetime, utc_to_local, to_discord_timestamp, to_discord_timestamp_tr
 from utils.points import format_score
 
 # Colores del bot
@@ -236,8 +236,7 @@ def build_match_embed(match: dict, show_form: bool = False, home_form: list = No
     )
 
     embed.add_field(name="🏆 Fase", value=f"{round_label} — {title_suffix}" if group else round_label, inline=True)
-    embed.add_field(name="🕐 Hora", value=format_match_time(kickoff), inline=True)
-    embed.add_field(name="📅 Fecha", value=format_match_date(kickoff), inline=True)
+    embed.add_field(name="🕐 Horario", value=to_discord_timestamp(kickoff, 'F'), inline=False)
 
     # Estadio
     stadium = match.get("stadium", "Por confirmar")
@@ -311,7 +310,7 @@ def build_daily_matches_embed(matches: list, date_str: str) -> discord.Embed:
 
         embed.add_field(
             name=f"{home_flag} {home}  vs  {away} {away_flag}",
-            value=f"🕐 {format_match_time(kickoff)}  |  🏆 {phase}  |  🏟️ {match.get('stadium', '?')}",
+            value=f"🕐 {to_discord_timestamp_tr(kickoff)}  |  🏆 {phase}  |  🏟️ {match.get('stadium', '?')}",
             inline=False,
         )
 
@@ -332,7 +331,7 @@ def build_predictions_embed(match: dict, predictions: list, guild) -> discord.Em
 
     embed = discord.Embed(
         title=f"🎯 Pronósticos — {home_flag} {home} vs {away} {away_flag}",
-        description=f"📅 {format_match_datetime(kickoff)}\n⏳ Cierre 10 minutos antes del partido",
+        description=f"📅 {to_discord_timestamp(kickoff, 'F')}\n⏳ Cierre {to_discord_timestamp(kickoff, 'R')}",
         color=COLOR_WARNING,
     )
 
