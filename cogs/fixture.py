@@ -115,7 +115,7 @@ class Fixture(commands.Cog):
                 inline=False,
             )
 
-        embed.set_footer(text="Horarios en ART (hora Argentina) · Mundial 2026")
+        embed.set_footer(text="Mundial 2026 · Los horarios se muestran en tu zona horaria local")
         await interaction.followup.send(embed=embed)
 
     @app_commands.command(name="partido", description="Ver detalle de un partido específico")

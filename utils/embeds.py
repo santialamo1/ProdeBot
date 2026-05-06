@@ -314,7 +314,7 @@ def build_daily_matches_embed(matches: list, date_str: str) -> discord.Embed:
             inline=False,
         )
 
-    embed.set_footer(text="Mundial 2026 · Los horarios están en hora Argentina (ART)")
+    embed.set_footer(text="Mundial 2026 · Los horarios se muestran en tu zona horaria local")
     return embed
 
 
