@@ -4,7 +4,18 @@ from discord.ext import commands
 import logging
 
 import config
-from utils.checks import only_in_chat, bot_activo
+
+def only_in_chat():
+    async def predicate(interaction: discord.Interaction) -> bool:
+        if interaction.channel_id != config.CHANNEL_CHAT:
+            await interaction.response.send_message(
+                f"⚽ Los comandos solo se pueden usar en <#{config.CHANNEL_CHAT}>",
+                ephemeral=True,
+            )
+            return False
+        return True
+    return app_commands.check(predicate)
+
 from db.matches import (
     get_all_matches, get_matches_today, get_matches_by_team,
     get_matches_by_group, get_team_recent_form
