@@ -227,12 +227,12 @@ Temas ya cubiertos recientemente (elegí uno diferente): {temas_str}"""
             try:
                 await asyncio.sleep(0.5)  # Delay entre reacciones para evitar rate limit
                 async for user in reaction.users():
-                if user.bot:
-                    continue
-                uid = str(user.id)
-                all_reactors.add(uid)
-                if uid not in user_reactions:
-                    user_reactions[uid] = set()
+                    if user.bot:
+                        continue
+                    uid = str(user.id)
+                    all_reactors.add(uid)
+                    if uid not in user_reactions:
+                        user_reactions[uid] = set()
                     user_reactions[uid].add(emoji)
             except discord.HTTPException as e:
                 log.warning(f"Rate limit al leer reacciones: {e} — continuando")
