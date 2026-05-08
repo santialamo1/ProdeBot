@@ -208,22 +208,46 @@ Temas ya cubiertos recientemente (elegí uno diferente): {temas_str}"""
             msg = await channel.fetch_message(original_msg.id)
         except discord.NotFound:
             return
+        except discord.HTTPException as e:
+            log.error(f"Error al obtener mensaje de trivia: {e} — reseteando cooldown para reintento")
+            self._last_trivia_time = None
+            return
 
         correct_idx = question["respuesta_correcta"]
         correct_emoji = OPTION_EMOJIS[correct_idx]
 
-        # Recolectar ganadores
-        winners = []
-        for reaction in msg.reactions:
-            if str(reaction.emoji) == correct_emoji:
-                async for user in reaction.users():
-                    if not user.bot:
-                        winners.append({
-                            "user_id": str(user.id),
-                            "username": user.display_name,
-                        })
+        # Mapear todos los emojis usados por cada usuario con delay para evitar rate limit
+        user_reactions: dict[str, set] = {}
+        all_reactors = set()
 
-        # Actualizar aciertos en DB por usuario
+        for reaction in msg.reactions:
+            emoji = str(reaction.emoji)
+            if emoji not in OPTION_EMOJIS:
+                continue
+            try:
+                await asyncio.sleep(0.5)  # Delay entre reacciones para evitar rate limit
+                async for user in reaction.users():
+                if user.bot:
+                    continue
+                uid = str(user.id)
+                all_reactors.add(uid)
+                if uid not in user_reactions:
+                    user_reactions[uid] = set()
+                    user_reactions[uid].add(emoji)
+            except discord.HTTPException as e:
+                log.warning(f"Rate limit al leer reacciones: {e} — continuando")
+                self._last_trivia_time = None
+                continue
+
+        # Ganadores: solo reaccionaron con el emoji correcto
+        winners = []
+        for uid, emojis in user_reactions.items():
+            if emojis == {correct_emoji}:
+                member = msg.guild.get_member(int(uid)) if msg.guild else None
+                username = member.display_name if member else uid
+                winners.append({"user_id": uid, "username": username})
+
+        # Actualizar DB
         for winner in winners:
             await self.bot.db.trivia_ranking.update_one(
                 {"user_id": winner["user_id"]},
@@ -232,14 +256,6 @@ Temas ya cubiertos recientemente (elegí uno diferente): {temas_str}"""
                  "$setOnInsert": {"participaciones": 0}},
                 upsert=True,
             )
-
-        # Sumar participaciones a todos los que reaccionaron
-        all_reactors = set()
-        for reaction in msg.reactions:
-            if str(reaction.emoji) in OPTION_EMOJIS:
-                async for user in reaction.users():
-                    if not user.bot:
-                        all_reactors.add(str(user.id))
 
         for user_id in all_reactors:
             await self.bot.db.trivia_ranking.update_one(
