@@ -74,10 +74,10 @@ class Trivia(commands.Cog):
             recent = await cursor.to_list(length=None)
             recent_questions = [r.get("pregunta", "") for r in recent]
 
-            # Ultimas 20 preguntas con su respuesta correcta
+            # Todas las preguntas para evitar repeticiones
             cursor_prev = self.bot.db.trivia.find(
-                {}, {"pregunta": 1, "opciones": 1, "respuesta_correcta": 1}
-            ).sort("posted_at", -1).limit(20)
+                {}, {"pregunta": 1, "tema": 1}
+            ).sort("posted_at", -1).limit(200)
             prev_docs = await cursor_prev.to_list(length=None)
 
             user_prompt = "Genera una nueva pregunta de trivia sobre el Mundial de futbol."
@@ -94,19 +94,22 @@ class Trivia(commands.Cog):
                         prev_temas.append(tema)
 
                 if prev_preguntas:
-                    preguntas_str = "\n".join(prev_preguntas[:15])
+                    preguntas_str = "\n".join(prev_preguntas)
                     user_prompt += f"""
 
-Estas son las preguntas ya realizadas — NO las reformules ni hagas preguntas sobre el mismo hecho aunque estén redactadas diferente:
+Estas son TODAS las preguntas ya realizadas — NO repitas ninguna ni preguntes sobre el mismo hecho aunque este redactado diferente:
 {preguntas_str}
 
-Elige un hecho o dato del Mundial completamente distinto a los de la lista."""
+Elige un hecho completamente distinto a todos los de la lista."""
 
                 if prev_temas:
-                    temas_str = ", ".join(list(dict.fromkeys(prev_temas))[:15])
+                    from collections import Counter
+                    tema_count = Counter(prev_temas)
+                    temas_frecuentes = [t for t, _ in tema_count.most_common(10)]
+                    temas_str = ", ".join(temas_frecuentes)
                     user_prompt += f"""
 
-Temas ya cubiertos recientemente (elegí uno diferente): {temas_str}"""
+Temas mas usados hasta ahora (prioriza temas distintos): {temas_str}"""
 
             message = await self.openai_client.chat.completions.create(
                 model="gpt-4o",
