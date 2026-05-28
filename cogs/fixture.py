@@ -63,6 +63,21 @@ class Fixture(commands.Cog):
             await self._send_fixture_list(interaction, matches, f"📊 Grupo {filtro.upper()}")
 
         else:
+            # Chicana para Chile
+            if filtro.lower() in ("chile", "la roja", "laroja"):
+                import random
+                chicanas = [
+                    "🇨🇱 ¿Chile? Ah, pensé que buscabas la Copa América… porque al Mundial no llegan nunca.",
+                    "🇨🇱 Chile... ese pasillo se quedó en el camino 👋",
+                    "🇨🇱 Error 404: Chile not found en el Mundial 2026 😂",
+                    "🇨🇱 Chile clasificó... a ver el Mundial desde casa 🛋️",
+                    "🇨🇱 ¿Chile en el Mundial? Eso es ciencia ficción para 2026 🚀",
+                    "🇨🇱 Chile está en el grupo de los que miran el Mundial por TV",
+                    "🇨🇱 ¿Querés ver el fixture de Chile? Te paso el calendario de amistosos",
+                ]
+                await interaction.followup.send(random.choice(chicanas))
+                return
+
             # Buscar por equipo
             matches = await get_matches_by_team(db, filtro)
             if not matches:
