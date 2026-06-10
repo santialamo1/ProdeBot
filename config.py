@@ -46,7 +46,6 @@ REMINDER_MINUTES = 60
 
 # Sistema de puntos
 POINTS_WINNER = 1       # Acertar ganador o empate
-POINTS_DIFF = 2         # Acertar diferencia de goles
 POINTS_EXACT = 3        # Acertar resultado exacto
 POINTS_STREAK_BONUS = 1 # Bonus por racha de 3+
 STREAK_MIN = 3          # Mínimo de aciertos para activar bonus de racha

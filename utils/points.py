@@ -52,18 +52,10 @@ def calculate_points(
     base_points = config.POINTS_WINNER
     description_parts.append(f"✅ Ganador (+{config.POINTS_WINNER}pt)")
 
-    # Verificar diferencia de goles
-    actual_diff = actual_home - actual_away
-    predicted_diff = predicted_home - predicted_away
-
-    if predicted_diff == actual_diff:
-        # Verificar resultado exacto
-        if predicted_home == actual_home and predicted_away == actual_away:
-            base_points = config.POINTS_EXACT
-            description_parts = [f"🎯 Resultado exacto (+{config.POINTS_EXACT}pts)"]
-        else:
-            base_points = config.POINTS_DIFF
-            description_parts = [f"⚡ Diferencia exacta (+{config.POINTS_DIFF}pts)"]
+    # Verificar resultado exacto
+    if predicted_home == actual_home and predicted_away == actual_away:
+        base_points = config.POINTS_EXACT
+        description_parts = [f"🎯 Resultado exacto (+{config.POINTS_EXACT}pts)"]
 
     # Multiplicador de fase
     multiplier = 1
