@@ -14,6 +14,7 @@ from db.users import ensure_user, set_champion_pick, get_user
 from db.matches import get_matches_by_team, get_matches_today, get_matches_by_group
 from utils.time_helpers import minutes_until, format_match_datetime
 from utils.embeds import get_flag, build_predictions_embed
+from utils.name_normalizer import normalize_team_name
 
 log = logging.getLogger("worldcup-bot.predictions")
 
@@ -41,7 +42,7 @@ class Predictions(commands.Cog):
     # ──────────────────────────────────────────────────────────
     @app_commands.command(name="pronostico", description="Pronosticá el resultado de un partido de hoy")
     @app_commands.describe(
-        equipo="Nombre de uno de los equipos (ej: Argentina, France)",
+        equipo="Nombre de uno de los equipos (ej: Argentina, Francia, Brasil)",
         goles_local="Goles del equipo local",
         goles_visitante="Goles del equipo visitante",
     )
@@ -63,6 +64,9 @@ class Predictions(commands.Cog):
         if goles_local < 0 or goles_visitante < 0:
             await interaction.followup.send("❌ Los goles no pueden ser negativos.", ephemeral=True)
             return
+
+        # Normalizar nombre del equipo (español → inglés exacto de la API)
+        equipo = normalize_team_name(equipo)
 
         # Buscar el partido
         matches = await get_matches_by_team(db, equipo)
@@ -265,12 +269,15 @@ class Predictions(commands.Cog):
             )
             return
 
+        # Normalizar nombre del equipo (español → inglés exacto de la API)
+        equipo = normalize_team_name(equipo)
+
         # Verificar que el equipo existe en el fixture
         matches = await get_matches_by_team(db, equipo)
         if not matches:
             await interaction.followup.send(
                 f"❌ No encontré **{equipo}** en el fixture. "
-                f"Revisá el nombre (en inglés, ej: Argentina, France, Brazil).",
+                f"Revisá el nombre (ej: Argentina, Francia, Brasil, Alemania).",
                 ephemeral=True,
             )
             return
@@ -336,6 +343,10 @@ class Predictions(commands.Cog):
                     ephemeral=True,
                 )
                 return
+
+        # Normalizar nombres (español → inglés exacto de la API)
+        equipo1 = normalize_team_name(equipo1)
+        equipo2 = normalize_team_name(equipo2)
 
         # Verificar que los equipos existen en ese grupo
         group_matches = await get_matches_by_group(db, grupo)
