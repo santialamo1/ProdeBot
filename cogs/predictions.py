@@ -11,7 +11,7 @@ from db.predictions import (
     get_predictions_for_match,
 )
 from db.users import ensure_user, set_champion_pick, get_user
-from db.matches import get_matches_by_team, get_matches_today
+from db.matches import get_matches_by_team, get_matches_today, get_matches_by_group
 from utils.time_helpers import minutes_until, format_match_datetime
 from utils.embeds import get_flag, build_predictions_embed
 
