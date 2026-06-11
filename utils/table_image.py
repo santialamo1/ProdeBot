@@ -10,6 +10,9 @@ from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 from utils.embeds import FLAG_EMOJIS
 
+BASE_DIR = Path(__file__).resolve().parent.parent
+FONT_PATH = BASE_DIR / "assets" / "fonts" / "InterVariable.ttf"
+
 # Paleta (estilo Discord dark)
 _BG        = (43, 45, 49)       # #2B2D31  fondo del card
 _HEADER_BG = (32, 34, 37)       # #202225  franja del encabezado
@@ -40,34 +43,30 @@ _HEADER_H    = 42
 _FOOTER_H    = 46
 
 
-def _font(size: int, bold: bool = False) -> ImageFont.FreeTypeFont:
-    candidates = [
-        "C:/Windows/Fonts/" + ("arialbd.ttf" if bold else "arial.ttf"),
-        "/usr/share/fonts/truetype/dejavu/DejaVuSans%s.ttf" % ("-Bold" if bold else ""),
-        "/Library/Fonts/Arial%s.ttf" % (" Bold" if bold else ""),
-    ]
-    for path in candidates:
-        try:
-            return ImageFont.truetype(path, size)
-        except OSError:
-            continue
-    return ImageFont.load_default()
+def _font(size: int, bold: bool = False):
+    try:
+        return ImageFont.truetype(str(FONT_PATH), size)
+    except OSError:
+        return ImageFont.load_default()
 
 
-def _emoji_font(size: int) -> ImageFont.FreeTypeFont:
-    """Fuente con soporte de emojis para banderas."""
+def _emoji_font(size: int):
     candidates = [
+        BASE_DIR / "assets" / "fonts" / "NotoColorEmoji.ttf",
+
         "/usr/share/fonts/truetype/noto/NotoColorEmoji.ttf",
         "/usr/share/fonts/noto/NotoColorEmoji.ttf",
-        "C:/Windows/Fonts/seguiemj.ttf",   # Segoe UI Emoji (Windows)
+        "C:/Windows/Fonts/seguiemj.ttf",
         "/Library/Fonts/Apple Color Emoji.ttc",
     ]
+
     for path in candidates:
         try:
-            return ImageFont.truetype(path, size)
+            return ImageFont.truetype(str(path), size)
         except OSError:
             continue
-    return _font(size)  # fallback sin emojis
+
+    return _font(size)
 
 
 def _get_flag_emoji(team_name: str) -> str:
