@@ -45,12 +45,22 @@ _HEADER_H    = 42
 _FOOTER_H    = 46
 
 
-def _font(size: int):
+def _font(size: int, weight: int = 400):
+    """
+    Carga la fuente variable Inter con control de grosor.
+    weight: 400 = Regular, 700 = Bold
+    """
     try:
-        return ImageFont.truetype(str(TEXT_FONT), size)
+        return ImageFont.truetype(
+            str(TEXT_FONT),
+            size,
+            layout_engine=ImageFont.LAYOUT_RAQM,
+            variation_settings={"wght": weight}
+        )
     except Exception as e:
         print(f"No se pudo cargar {TEXT_FONT}: {e}")
         return ImageFont.load_default()
+
 
 
 
@@ -93,12 +103,13 @@ def render_standings_image(standings: list, group_name: str) -> io.BytesIO:
     img  = Image.new("RGB", (width, height), _BG)
     draw = ImageDraw.Draw(img)
 
-    f_title  = _font(30, bold=True)
-    f_head   = _font(20, bold=True)
-    f_row    = _font(22)
-    f_row_b  = _font(22, bold=True)
-    f_foot   = _font(18)
-    f_emoji  = _emoji_font(22)
+    f_title  = _font(30, weight=700)   # título en bold
+    f_head   = _font(20, weight=700)   # encabezados en bold
+    f_row    = _font(22, weight=400)   # texto regular
+    f_row_b  = _font(22, weight=700)   # texto bold (ej. puntos)
+    f_foot   = _font(18, weight=400)   # footer regular
+    f_emoji  = _emoji_font(22)         # emojis
+
 
     # x derecho de cada columna numerica (alineacion a derecha)
     col_right = {}
