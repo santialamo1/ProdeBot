@@ -141,7 +141,7 @@ class Predictions(commands.Cog):
 
         predictions = await get_predictions_for_match(db, match["match_id"])
 
-        guild = self.bot.guilds[0] if self.bot.guilds else None
+        guild = channel.guild
         for pred in predictions:
             uid = int(pred["user_id"])
             member = guild.get_member(uid) if guild else None
