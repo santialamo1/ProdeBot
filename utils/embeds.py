@@ -428,30 +428,37 @@ def build_leaderboard_embed(users: list) -> discord.Embed:
 
 
 def build_standings_embed(standings: list, group_name: str) -> discord.Embed:
-    """Construye el embed de la tabla de posiciones de un grupo."""
     embed = discord.Embed(
         title=f"📊 Tabla — Grupo {group_name.upper()}",
         color=COLOR_PRIMARY,
     )
 
-    rows = []
+    lines = ["Pos  Equipo             PJ  G  E  P  GF GA Pts"]
+    lines.append("─" * 47)
+
+    for i, team in enumerate(standings):
+        name = team.get("team", "?")
+        pj  = team.get("played", 0)
+        g   = team.get("won", 0)
+        e   = team.get("drawn", 0)
+        p   = team.get("lost", 0)
+        gf  = team.get("goals_for", 0)
+        ga  = team.get("goals_against", 0)
+        pts = team.get("points", 0)
+
+        qualifier = "→" if i < 2 else "  "
+        lines.append(
+            f"{qualifier}{i+1}.  {name:<17}  {pj}   {g}  {e}  {p}   {gf}  {ga}   {pts}"
+        )
+
+    embed.description = "```\n" + "\n".join(lines) + "\n```"
+
+    flag_list = []
     for i, team in enumerate(standings):
         name = team.get("team", "?")
         flag = get_flag(name)
-        pj = team.get("played", 0)
-        g  = team.get("won", 0)
-        e  = team.get("drawn", 0)
-        p  = team.get("lost", 0)
-        gf = team.get("goals_for", 0)
-        ga = team.get("goals_against", 0)
-        pts = team.get("points", 0)
+        qualifier = "→" if i < 2 else "  "
+        flag_list.append(f"{qualifier} {flag} {name}")
 
-        qualifier = "🟢" if i < 2 else "⚫"
-        rows.append(
-            f"{qualifier} **{i+1}.** {flag} **{name}**\n"
-            f"　PJ `{pj}` · G `{g}` · E `{e}` · P `{p}` · GF `{gf}` · GA `{ga}` · **{pts} pts**"
-        )
-
-    embed.description = "\n\n".join(rows)
-    embed.set_footer(text="🟢 Clasifican a la siguiente ronda · Mundial 2026")
+    embed.set_footer(text="→ Clasifican a la siguiente ronda · Mundial 2026")
     return embed
