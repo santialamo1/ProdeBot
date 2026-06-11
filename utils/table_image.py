@@ -11,7 +11,9 @@ from PIL import Image, ImageDraw, ImageFont
 from utils.embeds import FLAG_EMOJIS
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-FONT_PATH = BASE_DIR / "assets" / "fonts" / "InterVariable.ttf"
+
+TEXT_FONT = BASE_DIR / "assets" / "fonts" / "InterVariable.ttf"
+EMOJI_FONT = BASE_DIR / "assets" / "fonts" / "NotoColorEmoji.ttf"
 
 # Paleta (estilo Discord dark)
 _BG        = (43, 45, 49)       # #2B2D31  fondo del card
@@ -43,30 +45,21 @@ _HEADER_H    = 42
 _FOOTER_H    = 46
 
 
-def _font(size: int, bold: bool = False):
+def _font(size: int):
     try:
-        return ImageFont.truetype(str(FONT_PATH), size)
-    except OSError:
+        return ImageFont.truetype(str(TEXT_FONT), size)
+    except Exception as e:
+        print(f"No se pudo cargar {TEXT_FONT}: {e}")
         return ImageFont.load_default()
 
 
+
 def _emoji_font(size: int):
-    candidates = [
-        BASE_DIR / "assets" / "fonts" / "NotoColorEmoji.ttf",
-
-        "/usr/share/fonts/truetype/noto/NotoColorEmoji.ttf",
-        "/usr/share/fonts/noto/NotoColorEmoji.ttf",
-        "C:/Windows/Fonts/seguiemj.ttf",
-        "/Library/Fonts/Apple Color Emoji.ttc",
-    ]
-
-    for path in candidates:
-        try:
-            return ImageFont.truetype(str(path), size)
-        except OSError:
-            continue
-
-    return _font(size)
+    try:
+        return ImageFont.truetype(str(EMOJI_FONT), size)
+    except Exception as e:
+        print(f"No se pudo cargar {EMOJI_FONT}: {e}")
+        return _font(size)
 
 
 def _get_flag_emoji(team_name: str) -> str:
