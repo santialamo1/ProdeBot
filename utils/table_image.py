@@ -14,7 +14,9 @@ from utils.embeds import get_flag_code
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-TEXT_FONT = BASE_DIR / "assets" / "fonts" / "InterVariable.ttf"
+FONT_REGULAR  = BASE_DIR / "assets" / "fonts" / "Inter_24pt-Regular.ttf"
+FONT_SEMIBOLD = BASE_DIR / "assets" / "fonts" / "Inter_24pt-SemiBold.ttf"
+FONT_BOLD     = BASE_DIR / "assets" / "fonts" / "Inter_24pt-Bold.ttf"
 
 # Paleta (estilo Discord dark)
 _BG        = (43, 45, 49)       # #2B2D31  fondo del card
@@ -48,15 +50,17 @@ _FOOTER_H    = 46
 
 
 def _font(size: int, weight: int = 400):
-    """Carga la fuente variable Inter con control de grosor (wght axis)."""
+    """Carga Inter Regular, SemiBold o Bold según el peso pedido."""
+    if weight >= 700:
+        path = FONT_BOLD
+    elif weight >= 600:
+        path = FONT_SEMIBOLD
+    else:
+        path = FONT_REGULAR
     try:
-        return ImageFont.truetype(
-            str(TEXT_FONT),
-            size,
-            variation_settings={"wght": weight}
-        )
+        return ImageFont.truetype(str(path), size)
     except Exception as e:
-        print(f"No se pudo cargar {TEXT_FONT}: {e}")
+        print(f"No se pudo cargar {path}: {e}")
         return ImageFont.load_default()
 
 
