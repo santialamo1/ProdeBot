@@ -11,7 +11,7 @@ from utils.embeds import build_leaderboard_embed, build_standings_embed, get_fla
 
 try:
     from utils.table_image import render_standings_image
-except Exception: 
+except Exception:   # Pillow no instalado: /tabla usa el embed de texto
     render_standings_image = None
 
 log = logging.getLogger("worldcup-bot.stats")
