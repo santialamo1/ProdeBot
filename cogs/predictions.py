@@ -148,8 +148,8 @@ class Predictions(commands.Cog):
             if not member and guild:
                 try:
                     member = await guild.fetch_member(uid)
-                except discord.NotFound:
-                    pass
+                except Exception as e:
+                    log.warning(f"No se pudo fetchear miembro {uid}: {e}")
             pred["username"] = member.display_name if member else f"Usuario {uid}"
 
         embed = build_predictions_embed(match, predictions, guild)
