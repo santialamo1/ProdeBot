@@ -1,19 +1,20 @@
-"""Render de la tabla de posiciones como imagen PNG (alineacion pixel-perfect).
+"""
+Render de la tabla de posiciones como imagen PNG (alineacion pixel-perfect).
 
-Genera un 'card' con tema oscuro estilo Discord, con bandera y nombre de
+Genera un 'card' con tema oscuro estilo Discord, con bandera PNG y nombre de
 cada equipo. Se usa en /tabla; si falla, el comando cae al embed de texto.
 """
 
 import io
+from functools import lru_cache
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
-from utils.embeds import FLAG_EMOJIS
+from utils.embeds import get_flag_code
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 TEXT_FONT = BASE_DIR / "assets" / "fonts" / "InterVariable.ttf"
-EMOJI_FONT = BASE_DIR / "assets" / "fonts" / "NotoColorEmoji.ttf"
 
 # Paleta (estilo Discord dark)
 _BG        = (43, 45, 49)       # #2B2D31  fondo del card
@@ -38,7 +39,8 @@ _PAD         = 28
 _ROW_H       = 46
 _COL_W       = 48
 _TEAM_X      = 80
-_FLAG_BOX_W  = 52   # ancho reservado para la bandera emoji
+_FLAG_BOX_W  = 52   # ancho reservado para la bandera PNG
+_FLAG_BOX_H  = 38   # alto de la bandera (ROW_H - 8), proporcional a 64x48
 _NAME_RESERVE= 250
 _TITLE_H     = 74
 _HEADER_H    = 42
@@ -46,15 +48,11 @@ _FOOTER_H    = 46
 
 
 def _font(size: int, weight: int = 400):
-    """
-    Carga la fuente variable Inter con control de grosor.
-    weight: 400 = Regular, 700 = Bold
-    """
+    """Carga la fuente variable Inter con control de grosor (wght axis)."""
     try:
         return ImageFont.truetype(
             str(TEXT_FONT),
             size,
-            layout_engine=ImageFont.LAYOUT_RAQM,
             variation_settings={"wght": weight}
         )
     except Exception as e:
@@ -62,27 +60,23 @@ def _font(size: int, weight: int = 400):
         return ImageFont.load_default()
 
 
-
-
-def _emoji_font(size: int):
+@lru_cache(maxsize=64)
+def _get_flag_image(team_name: str) -> Image.Image | None:
+    """Carga (y cachea) la bandera PNG usando el código de Flagpedia."""
     try:
-        return ImageFont.truetype(str(EMOJI_FONT), size)
+        code = get_flag_code(team_name)
+        if not code:
+            print(f"Sin código de bandera para '{team_name}'")
+            return None
+        path = BASE_DIR / "assets" / "flags" / f"{code}.png"
+        if path.exists():
+            img = Image.open(path).convert("RGBA")
+            return img.resize((_FLAG_BOX_W, _FLAG_BOX_H), Image.Resampling.LANCZOS)
+        else:
+            print(f"No existe el archivo de bandera: {path}")
     except Exception as e:
-        print(f"No se pudo cargar {EMOJI_FONT}: {e}")
-        return _font(size)
-
-
-def _get_flag_emoji(team_name: str) -> str:
-    """Retorna el emoji de bandera para el equipo."""
-    if not team_name:
-        return "🏳"
-    if team_name in FLAG_EMOJIS:
-        return FLAG_EMOJIS[team_name]
-    low = team_name.lower()
-    for name, emoji in FLAG_EMOJIS.items():
-        if name.lower() == low:
-            return emoji
-    return "🏳"
+        print(f"No se pudo cargar bandera {team_name}: {e}")
+    return None
 
 
 def _fit(draw: ImageDraw.ImageDraw, text: str, font, max_w: int) -> str:
@@ -103,13 +97,11 @@ def render_standings_image(standings: list, group_name: str) -> io.BytesIO:
     img  = Image.new("RGB", (width, height), _BG)
     draw = ImageDraw.Draw(img)
 
-    f_title  = _font(30, weight=700)   # título en bold
-    f_head   = _font(20, weight=700)   # encabezados en bold
-    f_row    = _font(22, weight=400)   # texto regular
-    f_row_b  = _font(22, weight=700)   # texto bold (ej. puntos)
-    f_foot   = _font(18, weight=400)   # footer regular
-    f_emoji  = _emoji_font(22)         # emojis
-
+    f_title  = _font(30, weight=700)
+    f_head   = _font(20, weight=700)
+    f_row    = _font(22, weight=400)
+    f_row_b  = _font(22, weight=700)
+    f_foot   = _font(18, weight=400)
 
     # x derecho de cada columna numerica (alineacion a derecha)
     col_right = {}
@@ -117,7 +109,7 @@ def render_standings_image(standings: list, group_name: str) -> io.BytesIO:
     for i, col in enumerate(reversed(_NUM_COLS)):
         col_right[col] = base - i * _COL_W
 
-    name_x     = _TEAM_X + _FLAG_BOX_W
+    name_x     = _TEAM_X + _FLAG_BOX_W + 8
     team_max_w = col_right["PJ"] - _COL_W + 8 - name_x
 
     # ── Titulo ────────────────────────────────────────────────
@@ -151,12 +143,12 @@ def render_standings_image(standings: list, group_name: str) -> io.BytesIO:
 
         draw.text((_PAD, cy), str(i + 1), font=f_row_b, fill=pos_color, anchor="lm")
 
-        # Bandera como emoji
-        flag_emoji = _get_flag_emoji(team.get("team", ""))
-        try:
-            draw.text((_TEAM_X, cy), flag_emoji, font=f_emoji, fill=_TEXT, anchor="lm")
-        except Exception:
-            pass  # si la fuente no soporta el emoji, se omite
+        # Bandera PNG
+        team_name = team.get("team", "")
+        flag_img = _get_flag_image(team_name)
+        if flag_img:
+            flag_y = row_top + (_ROW_H - _FLAG_BOX_H) // 2
+            img.paste(flag_img, (_TEAM_X, flag_y), flag_img)
 
         name = _fit(draw, team.get("team", "?"), f_row, team_max_w)
         draw.text((name_x, cy), name, font=f_row, fill=name_color, anchor="lm")

@@ -456,9 +456,124 @@ def build_standings_embed(standings: list, group_name: str) -> discord.Embed:
     flag_list = []
     for i, team in enumerate(standings):
         name = team.get("team", "?")
-        flag = get_flag(name)
+        flag = get_flag_code(name)
         qualifier = "→" if i < 2 else "  "
         flag_list.append(f"{qualifier} {flag} {name}")
 
     embed.set_footer(text="→ Clasifican a la siguiente ronda · Mundial 2026")
     return embed
+
+
+# ─────────────────────────────────────────────────────────────────
+# Códigos de país (Flagpedia) para usar con las imágenes PNG locales
+# ─────────────────────────────────────────────────────────────────
+FLAG_CODES = {
+    # América del Sur
+    "Argentina": "ar",
+    "Brazil": "br",
+    "Uruguay": "uy",
+    "Colombia": "co",
+    "Ecuador": "ec",
+    "Venezuela": "ve",
+    "Paraguay": "py",
+    "Bolivia": "bo",
+    "Chile": "cl",
+    "Peru": "pe",
+    # América del Norte y Central
+    "Mexico": "mx",
+    "USA": "us",
+    "United States": "us",
+    "Canada": "ca",
+    "Honduras": "hn",
+    "Panama": "pa",
+    "Costa Rica": "cr",
+    "Jamaica": "jm",
+    # Europa
+    "France": "fr",
+    "England": "gb-eng",
+    "Spain": "es",
+    "Germany": "de",
+    "Italy": "it",
+    "Portugal": "pt",
+    "Netherlands": "nl",
+    "Belgium": "be",
+    "Croatia": "hr",
+    "Serbia": "rs",
+    "Switzerland": "ch",
+    "Denmark": "dk",
+    "Poland": "pl",
+    "Austria": "at",
+    "Turkey": "tr",
+    "Sweden": "se",
+    "Norway": "no",
+    "Slovakia": "sk",
+    "Slovenia": "si",
+    "Czechia": "cz",
+    "Czech Republic": "cz",
+    "Greece": "gr",
+    "Bosnia-Herzegovina": "ba",
+    "Bosnia and Herzegovina": "ba",
+    "Ukraine": "ua",
+    "Scotland": "gb-sct",
+    "Wales": "gb-wls",
+    "Hungary": "hu",
+    "Romania": "ro",
+    "Albania": "al",
+    "Georgia": "ge",
+    # África
+    "Morocco": "ma",
+    "Senegal": "sn",
+    "Cameroon": "cm",
+    "Ghana": "gh",
+    "Nigeria": "ng",
+    "Ivory Coast": "ci",
+    "Côte d'Ivoire": "ci",
+    "Egypt": "eg",
+    "Tunisia": "tn",
+    "Algeria": "dz",
+    "South Africa": "za",
+    "DR Congo": "cd",
+    "Congo DR": "cd",
+    "Mali": "ml",
+    "Burkina Faso": "bf",
+    "Cape Verde": "cv",
+    "Cabo Verde": "cv",
+    "Tanzania": "tz",
+    "Uganda": "ug",
+    "Zimbabwe": "zw",
+    # Asia y Oceanía
+    "Japan": "jp",
+    "Korea Republic": "kr",
+    "South Korea": "kr",
+    "Saudi Arabia": "sa",
+    "Iran": "ir",
+    "IR Iran": "ir",
+    "Qatar": "qa",
+    "Iraq": "iq",
+    "Australia": "au",
+    "China": "cn",
+    "Uzbekistan": "uz",
+    "Jordan": "jo",
+    "Indonesia": "id",
+    "New Zealand": "nz",
+    "Oman": "om",
+    "Bahrain": "bh",
+    "UAE": "ae",
+    "United Arab Emirates": "ae",
+    # Otros
+    "Curaçao": "cw",
+    "Haiti": "ht",
+}
+
+
+def get_flag_code(team_name: str) -> str | None:
+    """Retorna el código de país (Flagpedia) para un equipo, o None si no se encuentra."""
+    if not team_name:
+        return None
+    if team_name in FLAG_CODES:
+        return FLAG_CODES[team_name]
+    team_lower = team_name.lower()
+    for name, code in FLAG_CODES.items():
+        if name.lower() == team_lower:
+            return code
+    return None
