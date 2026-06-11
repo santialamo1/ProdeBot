@@ -434,24 +434,24 @@ def build_standings_embed(standings: list, group_name: str) -> discord.Embed:
         color=COLOR_PRIMARY,
     )
 
-    header = "`Pos  Equipo              PJ  G  E  P  GF GA Pts`"
-    rows = [header]
-
+    rows = []
     for i, team in enumerate(standings):
         name = team.get("team", "?")
         flag = get_flag(name)
         pj = team.get("played", 0)
-        g = team.get("won", 0)
-        e = team.get("drawn", 0)
-        p = team.get("lost", 0)
+        g  = team.get("won", 0)
+        e  = team.get("drawn", 0)
+        p  = team.get("lost", 0)
         gf = team.get("goals_for", 0)
         ga = team.get("goals_against", 0)
         pts = team.get("points", 0)
 
-        qualifier = "→" if i < 2 else "  "  # Los primeros 2 clasifican
-        row = f"`{qualifier}{i+1}.  {flag}{name:<16} {pj}   {g}  {e}  {p}  {gf}  {ga}  {pts}`"
-        rows.append(row)
+        qualifier = "🟢" if i < 2 else "⚫"
+        rows.append(
+            f"{qualifier} **{i+1}.** {flag} **{name}**\n"
+            f"　PJ `{pj}` · G `{g}` · E `{e}` · P `{p}` · GF `{gf}` · GA `{ga}` · **{pts} pts**"
+        )
 
-    embed.description = "\n".join(rows)
-    embed.set_footer(text="→ Clasifican a la siguiente ronda · Mundial 2026")
+    embed.description = "\n\n".join(rows)
+    embed.set_footer(text="🟢 Clasifican a la siguiente ronda · Mundial 2026")
     return embed
