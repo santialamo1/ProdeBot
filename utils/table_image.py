@@ -9,8 +9,6 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
 
-from utils.team_names import to_spanish, iso_code
-
 # Paleta (estilo Discord dark)
 _BG        = (43, 45, 49)       # #2B2D31  fondo del card
 _HEADER_BG = (32, 34, 37)       # #202225  franja del encabezado
