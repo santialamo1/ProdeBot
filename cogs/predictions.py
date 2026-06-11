@@ -145,7 +145,12 @@ class Predictions(commands.Cog):
         for pred in predictions:
             uid = int(pred["user_id"])
             member = guild.get_member(uid) if guild else None
-            pred["username"] = member.display_name if member else pred["user_id"]
+            if not member and guild:
+                try:
+                    member = await guild.fetch_member(uid)
+                except discord.NotFound:
+                    pass
+            pred["username"] = member.display_name if member else f"Usuario {uid}"
 
         embed = build_predictions_embed(match, predictions, guild)
 
