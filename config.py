@@ -61,4 +61,4 @@ POINTS_QUINIELA_ONE = 2    # Acertar uno de los dos
 
 # Sync con API
 FIXTURE_SYNC_HOURS = 6      # Cada cuántas horas sincronizar el fixture
-LIVE_POLL_SECONDS = 120     # Cada cuántos segundos hacer polling durante partidos livepy
+LIVE_POLL_SECONDS = 300     # Cada cuántos segundos hacer polling durante partidos livepy
