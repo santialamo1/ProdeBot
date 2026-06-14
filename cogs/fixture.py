@@ -148,8 +148,7 @@ class Fixture(commands.Cog):
                 )
             embed.add_field(
                 name="📋 Jugados",
-                value="
-".join(jugados_lines),
+                value="\n".join(jugados_lines),
                 inline=False,
             )
 
