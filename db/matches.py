@@ -13,12 +13,18 @@ async def get_all_matches(db) -> list:
 
 async def get_matches_today(db) -> list:
     """Retorna los partidos del día de hoy en hora Argentina."""
+    from datetime import timedelta
     now_arg = datetime.now(tz)
-    start = now_arg.replace(hour=0, minute=0, second=0, microsecond=0).astimezone(pytz.utc)
-    end = now_arg.replace(hour=23, minute=59, second=59, microsecond=0).astimezone(pytz.utc)
+    start_arg = now_arg.replace(hour=0, minute=0, second=0, microsecond=0)
+    # Extendemos hasta las 06:00 ART del dia siguiente para incluir
+    # partidos de madrugada que pertenecen a la jornada del dia anterior
+    end_arg = start_arg + timedelta(hours=30)  # 00:00 ART hoy + 30hs = 06:00 ART manana
+
+    start_utc = start_arg.astimezone(pytz.utc)
+    end_utc = end_arg.astimezone(pytz.utc)
 
     cursor = db.matches.find({
-        "kickoff_utc": {"$gte": start, "$lte": end}
+        "kickoff_utc": {"$gte": start_utc, "$lte": end_utc}
     }).sort("kickoff_utc", 1)
     return await cursor.to_list(length=None)
 
