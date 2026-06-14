@@ -28,14 +28,33 @@ async def post_partidos_hoy(bot):
     matches = await get_matches_today(bot.db)
     date_str = format_match_date(datetime.now(pytz.timezone(config.TIMEZONE)))
 
-    embed = build_daily_matches_embed(matches, date_str)
+    # Filtrar partidos que ya fueron posteados en días anteriores
+    matches_filtrados = []
+    for match in matches:
+        ya_posteado = await bot.db.partidos_posteados.find_one({"match_id": match["match_id"]})
+        if not ya_posteado:
+            matches_filtrados.append(match)
+
+    if not matches_filtrados:
+        log.info(f"Post diario: todos los partidos de hoy ya fueron posteados anteriormente")
+        return
+
+    embed = build_daily_matches_embed(matches_filtrados, date_str)
     await channel.send(embed=embed)
 
-    log.info(f"Post diario enviado: {len(matches)} partidos para {date_str}")
+    # Marcar los partidos como posteados
+    for match in matches_filtrados:
+        await bot.db.partidos_posteados.update_one(
+            {"match_id": match["match_id"]},
+            {"$set": {"match_id": match["match_id"], "posted_at": datetime.now(pytz.utc)}},
+            upsert=True,
+        )
 
-    # Si hay partidos hoy, también crear los embeds de pronósticos
-    if matches:
-        await _setup_prediction_embeds(bot, matches)
+    log.info(f"Post diario enviado: {len(matches_filtrados)} partidos para {date_str}")
+
+    # Si hay partidos, también crear los embeds de pronósticos
+    if matches_filtrados:
+        await _setup_prediction_embeds(bot, matches_filtrados)
 
 
 async def _setup_prediction_embeds(bot, matches: list):
