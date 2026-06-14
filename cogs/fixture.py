@@ -60,20 +60,21 @@ class Fixture(commands.Cog):
 
         elif filtro.upper() in GROUPS:
             matches = await get_matches_by_group(db, filtro.upper())
-            await self._send_fixture_list(interaction, matches, f"📊 Grupo {filtro.upper()}")
+            # Separar jugados de pendientes
+            jugados = [m for m in matches if m.get("status") == "finished"]
+            pendientes = [m for m in matches if m.get("status") != "finished"]
+            await self._send_fixture_list(interaction, pendientes, f"📊 Grupo {filtro.upper()} — Próximos partidos", jugados=jugados)
 
         else:
             # Chicana para Chile
             if filtro.lower() in ("chile", "la roja", "laroja"):
                 import random
                 chicanas = [
-                    "🇨🇱 ¿Chile? Ah, pensé que buscabas la Copa América… porque al Mundial no llegan nunca.",
-                    "🇨🇱 Chile... ese pasillo se quedó en el camino 👋",
+                    "🇨🇱 Chile no clasificó al Mundial 2026. ¡Mejor buscar entradas para verlo por tele! 📺",
+                    "🇨🇱 Chile... ese equipo que iba a estar en el Mundial pero se quedó en el camino 👋",
                     "🇨🇱 Error 404: Chile not found en el Mundial 2026 😂",
                     "🇨🇱 Chile clasificó... a ver el Mundial desde casa 🛋️",
                     "🇨🇱 ¿Chile en el Mundial? Eso es ciencia ficción para 2026 🚀",
-                    "🇨🇱 Chile está en el grupo de los que miran el Mundial por TV",
-                    "🇨🇱 ¿Querés ver el fixture de Chile? Te paso el calendario de amistosos",
                 ]
                 await interaction.followup.send(random.choice(chicanas))
                 return
@@ -87,11 +88,13 @@ class Fixture(commands.Cog):
                     ephemeral=True,
                 )
                 return
-            await self._send_fixture_list(interaction, matches, f"🔍 Partidos de {filtro.title()}")
+            jugados = [m for m in matches if m.get("status") == "finished"]
+            pendientes = [m for m in matches if m.get("status") != "finished"]
+            await self._send_fixture_list(interaction, pendientes, f"🔍 Partidos de {filtro.title()}", jugados=jugados)
 
-    async def _send_fixture_list(self, interaction: discord.Interaction, matches: list, title: str):
-        """Envía una lista de partidos como embed."""
-        if not matches:
+    async def _send_fixture_list(self, interaction: discord.Interaction, matches: list, title: str, jugados: list = None):
+        """Envía una lista de partidos como embed. Muestra pendientes primero y jugados al final."""
+        if not matches and not jugados:
             await interaction.followup.send("😴 No hay partidos para mostrar.", ephemeral=True)
             return
 
@@ -127,6 +130,26 @@ class Fixture(commands.Cog):
             embed.add_field(
                 name=f"{home_flag} {home} vs {away} {away_flag}",
                 value=f"🕐 {time_str}  |  {phase}",
+                inline=False,
+            )
+
+        # Mostrar jugados al final si los hay
+        if jugados:
+            from utils.embeds import get_flag, get_round_label
+            jugados_lines = []
+            for m in jugados[-5:]:  # Últimos 5 jugados
+                home = m.get("home_team", "?")
+                away = m.get("away_team", "?")
+                score = m.get("score", {})
+                hg = score.get("home", "?")
+                ag = score.get("away", "?")
+                jugados_lines.append(
+                    f"{get_flag(home)} {home} **{hg}-{ag}** {away} {get_flag(away)} ✅"
+                )
+            embed.add_field(
+                name="📋 Jugados",
+                value="
+".join(jugados_lines),
                 inline=False,
             )
 
