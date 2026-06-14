@@ -104,6 +104,9 @@ class WorldCupBot(commands.Bot):
         await self.db.trivia_ranking.create_index("user_id", unique=True)
         await self.db.trivia_ranking.create_index("aciertos")
 
+        # partidos_posteados
+        await self.db.partidos_posteados.create_index("match_id", unique=True)
+
         log.info("Índices de MongoDB creados")
 
     def _setup_scheduler(self):
