@@ -47,8 +47,9 @@ class Fixture(commands.Cog):
 
         if filtro is None:
             # Fixture completo — mostrar próximos 10 partidos
+            FINISHED_STATUSES = ("finished", "completed", "ft", "aet", "pen")
             matches = await get_all_matches(db)
-            upcoming = [m for m in matches if m.get("status") != "finished"][:10]
+            upcoming = [m for m in matches if m.get("status", "").lower() not in FINISHED_STATUSES][:10]
             await self._send_fixture_list(interaction, upcoming, "📅 Próximos partidos")
 
         elif filtro.lower() == "hoy":
@@ -61,8 +62,8 @@ class Fixture(commands.Cog):
         elif filtro.upper() in GROUPS:
             matches = await get_matches_by_group(db, filtro.upper())
             # Separar jugados de pendientes
-            jugados = [m for m in matches if m.get("status") == "finished"]
-            pendientes = [m for m in matches if m.get("status") != "finished"]
+            jugados = [m for m in matches if m.get("status", "").lower() in ("finished", "completed", "ft", "aet", "pen")]
+            pendientes = [m for m in matches if m.get("status", "").lower() not in ("finished", "completed", "ft", "aet", "pen")]
             await self._send_fixture_list(interaction, pendientes, f"📊 Grupo {filtro.upper()} — Próximos partidos", jugados=jugados)
 
         else:
@@ -88,8 +89,8 @@ class Fixture(commands.Cog):
                     ephemeral=True,
                 )
                 return
-            jugados = [m for m in matches if m.get("status") == "finished"]
-            pendientes = [m for m in matches if m.get("status") != "finished"]
+            jugados = [m for m in matches if m.get("status", "").lower() in ("finished", "completed", "ft", "aet", "pen")]
+            pendientes = [m for m in matches if m.get("status", "").lower() not in ("finished", "completed", "ft", "aet", "pen")]
             await self._send_fixture_list(interaction, pendientes, f"🔍 Partidos de {filtro.title()}", jugados=jugados)
 
     async def _send_fixture_list(self, interaction: discord.Interaction, matches: list, title: str, jugados: list = None):
