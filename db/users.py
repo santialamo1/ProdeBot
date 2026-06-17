@@ -48,7 +48,8 @@ async def add_points(db, user_id: int, points: int):
 async def update_streak(db, user_id: int, correct: bool):
     """
     Actualiza la racha del usuario.
-    Si acertó, incrementa. Si falló, resetea a 0.
+    'correct' debe ser True solo cuando el pronóstico fue RESULTADO EXACTO
+    (no alcanza con acertar el ganador). Si no fue exacto, resetea a 0.
     Retorna la racha actual después de la actualización.
     """
     user = await db.users.find_one({"user_id": str(user_id)})
