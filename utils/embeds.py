@@ -13,165 +13,45 @@ COLOR_GOLD = 0xF1C40F       # Dorado para rankings
 
 # Emojis de banderas por nombre completo en inglés (tal como los devuelve la API)
 FLAG_EMOJIS = {
-    # América del Sur
-    "Argentina": "🇦🇷",
-    "Brazil": "🇧🇷",
-    "Uruguay": "🇺🇾",
-    "Colombia": "🇨🇴",
-    "Ecuador": "🇪🇨",
-    "Venezuela": "🇻🇪",
-    "Paraguay": "🇵🇾",
-    "Bolivia": "🇧🇴",
-    "Chile": "🇨🇱",
-    "Peru": "🇵🇪",
-    # América del Norte y Central
-    "Mexico": "🇲🇽",
-    "USA": "🇺🇸",
-    "United States": "🇺🇸",
-    "Canada": "🇨🇦",
-    "Honduras": "🇭🇳",
-    "Panama": "🇵🇦",
-    "Costa Rica": "🇨🇷",
-    "Jamaica": "🇯🇲",
-    # Europa
-    "France": "🇫🇷",
-    "England": "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
-    "Spain": "🇪🇸",
-    "Germany": "🇩🇪",
-    "Italy": "🇮🇹",
-    "Portugal": "🇵🇹",
-    "Netherlands": "🇳🇱",
-    "Belgium": "🇧🇪",
-    "Croatia": "🇭🇷",
-    "Serbia": "🇷🇸",
-    "Switzerland": "🇨🇭",
-    "Denmark": "🇩🇰",
-    "Poland": "🇵🇱",
-    "Austria": "🇦🇹",
-    "Turkey": "🇹🇷",
-    "Sweden": "🇸🇪",
-    "Norway": "🇳🇴",
-    "Slovakia": "🇸🇰",
-    "Slovenia": "🇸🇮",
-    "Czechia": "🇨🇿",
-    "Czech Republic": "🇨🇿",
-    "Greece": "🇬🇷",
-    "Bosnia-Herzegovina": "🇧🇦",
-    "Bosnia and Herzegovina": "🇧🇦",
-    "Ukraine": "🇺🇦",
-    "Scotland": "🏴󠁧󠁢󠁳󠁣󠁴󠁿",
-    "Wales": "🏴󠁧󠁢󠁷󠁬󠁳󠁿",
-    "Hungary": "🇭🇺",
-    "Romania": "🇷🇴",
-    "Albania": "🇦🇱",
-    "Georgia": "🇬🇪",
-    # África
-    "Morocco": "🇲🇦",
-    "Senegal": "🇸🇳",
-    "Cameroon": "🇨🇲",
-    "Ghana": "🇬🇭",
-    "Nigeria": "🇳🇬",
-    "Ivory Coast": "🇨🇮",
-    "Egypt": "🇪🇬",
-    "Tunisia": "🇹🇳",
-    "Algeria": "🇩🇿",
-    "South Africa": "🇿🇦",
-    "DR Congo": "🇨🇩",
-    "Congo DR": "🇨🇩",
-    "Mali": "🇲🇱",
-    "Burkina Faso": "🇧🇫",
-    "Cape Verde": "🇨🇻",
-    "Tanzania": "🇹🇿",
-    "Uganda": "🇺🇬",
-    "Zimbabwe": "🇿🇼",
-    # Asia y Oceanía
-    "Japan": "🇯🇵",
-    "Korea Republic": "🇰🇷",
-    "South Korea": "🇰🇷",
-    "Saudi Arabia": "🇸🇦",
-    "Iran": "🇮🇷",
-    "Qatar": "🇶🇦",
-    "Iraq": "🇮🇶",
-    "Australia": "🇦🇺",
-    "China": "🇨🇳",
-    "Uzbekistan": "🇺🇿",
-    "Jordan": "🇯🇴",
-    "Indonesia": "🇮🇩",
-    "New Zealand": "🇳🇿",
-    "Oman": "🇴🇲",
-    "Bahrain": "🇧🇭",
-    "UAE": "🇦🇪",
+    "Argentina": "🇦🇷", "Brazil": "🇧🇷", "Uruguay": "🇺🇾", "Colombia": "🇨🇴",
+    "Ecuador": "🇪🇨", "Venezuela": "🇻🇪", "Paraguay": "🇵🇾", "Bolivia": "🇧🇴",
+    "Chile": "🇨🇱", "Peru": "🇵🇪", "Mexico": "🇲🇽", "USA": "🇺🇸",
+    "United States": "🇺🇸", "Canada": "🇨🇦", "Honduras": "🇭🇳", "Panama": "🇵🇦",
+    "Costa Rica": "🇨🇷", "Jamaica": "🇯🇲", "France": "🇫🇷", "England": "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
+    "Spain": "🇪🇸", "Germany": "🇩🇪", "Italy": "🇮🇹", "Portugal": "🇵🇹",
+    "Netherlands": "🇳🇱", "Belgium": "🇧🇪", "Croatia": "🇭🇷", "Serbia": "🇷🇸",
+    "Switzerland": "🇨🇭", "Denmark": "🇩🇰", "Poland": "🇵🇱", "Austria": "🇦🇹",
+    "Turkey": "🇹🇷", "Sweden": "🇸🇪", "Norway": "🇳🇴", "Slovakia": "🇸🇰",
+    "Slovenia": "🇸🇮", "Czechia": "🇨🇿", "Czech Republic": "🇨🇿", "Greece": "🇬🇷",
+    "Bosnia-Herzegovina": "🇧🇦", "Bosnia and Herzegovina": "🇧🇦", "Ukraine": "🇺🇦",
+    "Scotland": "🏴󠁧󠁢󠁳󠁣󠁴󠁿", "Wales": "🏴󠁧󠁢󠁷󠁬󠁳󠁿", "Hungary": "🇭🇺", "Romania": "🇷🇴",
+    "Albania": "🇦🇱", "Georgia": "🇬🇪", "Morocco": "🇲🇦", "Senegal": "🇸🇳",
+    "Cameroon": "🇨🇲", "Ghana": "🇬🇭", "Nigeria": "🇳🇬", "Ivory Coast": "🇨🇮",
+    "Egypt": "🇪🇬", "Tunisia": "🇹🇳", "Algeria": "🇩🇿", "South Africa": "🇿🇦",
+    "DR Congo": "🇨🇩", "Congo DR": "🇨🇩", "Mali": "🇲🇱", "Burkina Faso": "🇧🇫",
+    "Cape Verde": "🇨🇻", "Tanzania": "🇹🇿", "Uganda": "🇺🇬", "Zimbabwe": "🇿🇼",
+    "Japan": "🇯🇵", "Korea Republic": "🇰🇷", "South Korea": "🇰🇷", "Saudi Arabia": "🇸🇦",
+    "Iran": "🇮🇷", "Qatar": "🇶🇦", "Iraq": "🇮🇶", "Australia": "🇦🇺",
+    "China": "🇨🇳", "Uzbekistan": "🇺🇿", "Jordan": "🇯🇴", "Indonesia": "🇮🇩",
+    "New Zealand": "🇳🇿", "Oman": "🇴🇲", "Bahrain": "🇧🇭", "UAE": "🇦🇪",
     "United Arab Emirates": "🇦🇪",
-    # Nombres exactos de la API que difieren
-    "IR Iran": "🇮🇷",
-    "Cabo Verde": "🇨🇻",
-    "Curaçao": "🇨🇼",
-    "Côte d'Ivoire": "🇨🇮",
+    "IR Iran": "🇮🇷", "Cabo Verde": "🇨🇻", "Curaçao": "🇨🇼", "Côte d'Ivoire": "🇨🇮",
     "Haiti": "🇭🇹",
-    "Scotland": "🏴󠁧󠁢󠁳󠁣󠁴󠁿",
 }
 
 STADIUM_DATA = {
-    "MetLife Stadium": {
-        "city": "East Rutherford, NJ",
-        "capacity": "82,500",
-        "fact": "Uno de los estadios más grandes de la NFL, sede de la Final del Mundial.",
-    },
-    "AT&T Stadium": {
-        "city": "Arlington, TX",
-        "capacity": "80,000",
-        "fact": "Conocido como 'Jerry World', tiene la pantalla de video más grande del mundo en un estadio.",
-    },
-    "SoFi Stadium": {
-        "city": "Inglewood, CA",
-        "capacity": "70,240",
-        "fact": "El estadio más caro jamás construido, con un costo de $5.5 mil millones.",
-    },
-    "Levi's Stadium": {
-        "city": "Santa Clara, CA",
-        "capacity": "68,500",
-        "fact": "Tiene más de 400 paneles solares en el techo que generan energía renovable.",
-    },
-    "Arrowhead Stadium": {
-        "city": "Kansas City, MO",
-        "capacity": "76,416",
-        "fact": "Considerado el estadio más ruidoso de la NFL, con récord Guinness de 142.2 decibeles.",
-    },
-    "Mercedes-Benz Stadium": {
-        "city": "Atlanta, GA",
-        "capacity": "71,000",
-        "fact": "Tiene un techo retráctil en forma de ojo y 360 grados de pantallas de video.",
-    },
-    "Gillette Stadium": {
-        "city": "Foxborough, MA",
-        "capacity": "65,878",
-        "fact": "Casa de los New England Patriots, uno de los equipos más exitosos de la NFL.",
-    },
-    "Lincoln Financial Field": {
-        "city": "Philadelphia, PA",
-        "capacity": "69,796",
-        "fact": "Filadelfia fue sede de la firma de la Declaración de Independencia de EE.UU.",
-    },
-    "Estadio Azteca": {
-        "city": "Ciudad de México, México",
-        "capacity": "87,523",
-        "fact": "El único estadio en albergar dos finales de Copa del Mundo (1970 y 1986). Maradona marcó el 'Gol del Siglo' aquí.",
-    },
-    "Estadio Akron": {
-        "city": "Guadalajara, México",
-        "capacity": "49,850",
-        "fact": "Inaugurado en 2010, es el estadio moderno más importante del occidente de México.",
-    },
-    "BC Place": {
-        "city": "Vancouver, Canadá",
-        "capacity": "54,500",
-        "fact": "Primer estadio con techo retráctil de Canadá, sede de los Juegos Olímpicos de Invierno 2010.",
-    },
-    "BMO Field": {
-        "city": "Toronto, Canadá",
-        "capacity": "45,000",
-        "fact": "Casa del Toronto FC, uno de los clubes más populares de la MLS.",
-    },
+    "MetLife Stadium": {"city": "East Rutherford, NJ", "capacity": "82,500", "fact": "Uno de los estadios más grandes de la NFL, sede de la Final del Mundial."},
+    "AT&T Stadium": {"city": "Arlington, TX", "capacity": "80,000", "fact": "Conocido como 'Jerry World', tiene la pantalla de video más grande del mundo en un estadio."},
+    "SoFi Stadium": {"city": "Inglewood, CA", "capacity": "70,240", "fact": "El estadio más caro jamás construido, con un costo de $5.5 mil millones."},
+    "Levi's Stadium": {"city": "Santa Clara, CA", "capacity": "68,500", "fact": "Tiene más de 400 paneles solares en el techo que generan energía renovable."},
+    "Arrowhead Stadium": {"city": "Kansas City, MO", "capacity": "76,416", "fact": "Considerado el estadio más ruidoso de la NFL, con récord Guinness de 142.2 decibeles."},
+    "Mercedes-Benz Stadium": {"city": "Atlanta, GA", "capacity": "71,000", "fact": "Tiene un techo retráctil en forma de ojo y 360 grados de pantallas de video."},
+    "Gillette Stadium": {"city": "Foxborough, MA", "capacity": "65,878", "fact": "Casa de los New England Patriots, uno de los equipos más exitosos de la NFL."},
+    "Lincoln Financial Field": {"city": "Philadelphia, PA", "capacity": "69,796", "fact": "Filadelfia fue sede de la firma de la Declaración de Independencia de EE.UU."},
+    "Estadio Azteca": {"city": "Ciudad de México, México", "capacity": "87,523", "fact": "El único estadio en albergar dos finales de Copa del Mundo (1970 y 1986). Maradona marcó el 'Gol del Siglo' aquí."},
+    "Estadio Akron": {"city": "Guadalajara, México", "capacity": "49,850", "fact": "Inaugurado en 2010, es el estadio moderno más importante del occidente de México."},
+    "BC Place": {"city": "Vancouver, Canadá", "capacity": "54,500", "fact": "Primer estadio con techo retráctil de Canadá, sede de los Juegos Olímpicos de Invierno 2010."},
+    "BMO Field": {"city": "Toronto, Canadá", "capacity": "45,000", "fact": "Casa del Toronto FC, uno de los clubes más populares de la MLS."},
 }
 
 
@@ -179,10 +59,8 @@ def get_flag(team_name: str) -> str:
     """Retorna el emoji de bandera para un equipo."""
     if not team_name:
         return "🏳️"
-    # Lookup exacto primero
     if team_name in FLAG_EMOJIS:
         return FLAG_EMOJIS[team_name]
-    # Fallback: búsqueda case-insensitive
     team_lower = team_name.lower()
     for name, emoji in FLAG_EMOJIS.items():
         if name.lower() == team_lower:
@@ -217,7 +95,6 @@ def build_match_embed(match: dict, show_form: bool = False, home_form: list = No
     home_flag = get_flag(home)
     away_flag = get_flag(away)
 
-    # Color según estado
     if status == "live":
         color = COLOR_LIVE
     elif status == "finished":
@@ -225,7 +102,6 @@ def build_match_embed(match: dict, show_form: bool = False, home_form: list = No
     else:
         color = COLOR_PRIMARY
 
-    # Título
     round_label = get_round_label(match.get("round", ""))
     group = match.get("group_name", "")
     title_suffix = f"Grupo {group}" if group else round_label
@@ -238,7 +114,6 @@ def build_match_embed(match: dict, show_form: bool = False, home_form: list = No
     embed.add_field(name="🏆 Fase", value=f"{round_label} — {title_suffix}" if group else round_label, inline=True)
     embed.add_field(name="🕐 Horario", value=to_discord_timestamp(kickoff, 'F'), inline=False)
 
-    # Estadio
     stadium = match.get("stadium", "Por confirmar")
     stadium_info = STADIUM_DATA.get(stadium, {})
     stadium_city = stadium_info.get("city", "")
@@ -249,7 +124,6 @@ def build_match_embed(match: dict, show_form: bool = False, home_form: list = No
         stadium_text += f" · 👥 {stadium_info['capacity']}"
     embed.add_field(name="🏟️ Estadio", value=stadium_text, inline=False)
 
-    # Dato curioso del estadio
     if stadium in STADIUM_DATA and STADIUM_DATA[stadium].get("fact"):
         embed.add_field(
             name="💡 Dato del estadio",
@@ -257,7 +131,6 @@ def build_match_embed(match: dict, show_form: bool = False, home_form: list = No
             inline=False
         )
 
-    # Resultado si el partido finalizó o está en curso
     if status in ("live", "finished") and match.get("score"):
         score = match["score"]
         if score.get("home") is not None:
@@ -268,7 +141,6 @@ def build_match_embed(match: dict, show_form: bool = False, home_form: list = No
                 inline=False,
             )
 
-    # Forma reciente
     if show_form and home_form is not None and away_form is not None:
         home_form_str = " ".join(home_form) if home_form else "Sin historial"
         away_form_str = " ".join(away_form) if away_form else "Sin historial"
@@ -355,8 +227,13 @@ def build_predictions_embed(match: dict, predictions: list, guild) -> discord.Em
     return embed
 
 
-def build_result_embed(match: dict, predictions: list, points_map: dict) -> discord.Embed:
-    """Construye el embed de resultado con quién acertó qué."""
+def build_result_embed(match: dict, predictions: list, points_map: dict, details_map: dict = None) -> discord.Embed:
+    """
+    Construye el embed de resultado con quién acertó qué.
+    details_map (opcional): {user_id: "descripcion del calculo"} para mostrar
+    el desglose (ganador, exacto, racha, multiplicador) y evitar confusiones
+    cuando dos personas con el mismo pronóstico suman puntos distintos por racha.
+    """
     home = match.get("home_team", "TBD")
     away = match.get("away_team", "TBD")
     home_flag = get_flag(home)
@@ -364,6 +241,7 @@ def build_result_embed(match: dict, predictions: list, points_map: dict) -> disc
     score = match.get("score", {})
     h_score = score.get("home", 0)
     a_score = score.get("away", 0)
+    details_map = details_map or {}
 
     embed = discord.Embed(
         title=f"🏁 Resultado Final",
@@ -379,9 +257,11 @@ def build_result_embed(match: dict, predictions: list, points_map: dict) -> disc
             ph = pred.get("predicted_home", "?")
             pa = pred.get("predicted_away", "?")
             pts = points_map.get(pred["user_id"], 0)
+            detail = details_map.get(pred["user_id"], "")
 
             if pts > 0:
-                winners.append(f"✅ **{username}**: pronosticó {ph}-{pa} → +{pts}pts")
+                detail_str = f" _{detail}_" if detail else ""
+                winners.append(f"✅ **{username}**: pronosticó {ph}-{pa} → **+{pts}pts**{detail_str}")
             else:
                 others.append(f"❌ **{username}**: pronosticó {ph}-{pa}")
 
@@ -392,7 +272,7 @@ def build_result_embed(match: dict, predictions: list, points_map: dict) -> disc
     else:
         embed.add_field(name="Sin pronósticos", value="Nadie pronosticó este partido.", inline=False)
 
-    embed.set_footer(text="Mundial 2026")
+    embed.set_footer(text="Mundial 2026 · El 🔥 indica bonus por racha de 3+ resultados exactos")
     return embed
 
 
@@ -468,105 +348,33 @@ def build_standings_embed(standings: list, group_name: str) -> discord.Embed:
 # Códigos de país (Flagpedia) para usar con las imágenes PNG locales
 # ─────────────────────────────────────────────────────────────────
 FLAG_CODES = {
-    # América del Sur
-    "Argentina": "ar",
-    "Brazil": "br",
-    "Uruguay": "uy",
-    "Colombia": "co",
-    "Ecuador": "ec",
-    "Venezuela": "ve",
-    "Paraguay": "py",
-    "Bolivia": "bo",
-    "Chile": "cl",
-    "Peru": "pe",
-    # América del Norte y Central
-    "Mexico": "mx",
-    "USA": "us",
-    "United States": "us",
-    "Canada": "ca",
-    "Honduras": "hn",
-    "Panama": "pa",
-    "Costa Rica": "cr",
-    "Jamaica": "jm",
-    # Europa
-    "France": "fr",
-    "England": "gb-eng",
-    "Spain": "es",
-    "Germany": "de",
-    "Italy": "it",
-    "Portugal": "pt",
-    "Netherlands": "nl",
-    "Belgium": "be",
-    "Croatia": "hr",
-    "Serbia": "rs",
-    "Switzerland": "ch",
-    "Denmark": "dk",
-    "Poland": "pl",
-    "Austria": "at",
-    "Turkey": "tr",
-    "Sweden": "se",
-    "Norway": "no",
-    "Slovakia": "sk",
-    "Slovenia": "si",
-    "Czechia": "cz",
-    "Czech Republic": "cz",
-    "Greece": "gr",
-    "Bosnia-Herzegovina": "ba",
-    "Bosnia and Herzegovina": "ba",
-    "Ukraine": "ua",
-    "Scotland": "gb-sct",
-    "Wales": "gb-wls",
-    "Hungary": "hu",
-    "Romania": "ro",
-    "Albania": "al",
-    "Georgia": "ge",
-    # África
-    "Morocco": "ma",
-    "Senegal": "sn",
-    "Cameroon": "cm",
-    "Ghana": "gh",
-    "Nigeria": "ng",
-    "Ivory Coast": "ci",
-    "Côte d'Ivoire": "ci",
-    "Egypt": "eg",
-    "Tunisia": "tn",
-    "Algeria": "dz",
-    "South Africa": "za",
-    "DR Congo": "cd",
-    "Congo DR": "cd",
-    "Mali": "ml",
-    "Burkina Faso": "bf",
-    "Cape Verde": "cv",
-    "Cabo Verde": "cv",
-    "Tanzania": "tz",
-    "Uganda": "ug",
-    "Zimbabwe": "zw",
-    # Asia y Oceanía
-    "Japan": "jp",
-    "Korea Republic": "kr",
-    "South Korea": "kr",
-    "Saudi Arabia": "sa",
-    "Iran": "ir",
-    "IR Iran": "ir",
-    "Qatar": "qa",
-    "Iraq": "iq",
-    "Australia": "au",
-    "China": "cn",
-    "Uzbekistan": "uz",
-    "Jordan": "jo",
-    "Indonesia": "id",
-    "New Zealand": "nz",
-    "Oman": "om",
-    "Bahrain": "bh",
-    "UAE": "ae",
-    "United Arab Emirates": "ae",
-    # Otros
-    "Curaçao": "cw",
-    "Haiti": "ht",
+    "Argentina": "ar", "Brazil": "br", "Uruguay": "uy", "Colombia": "co",
+    "Ecuador": "ec", "Venezuela": "ve", "Paraguay": "py", "Bolivia": "bo",
+    "Chile": "cl", "Peru": "pe", "Mexico": "mx", "USA": "us",
+    "United States": "us", "Canada": "ca", "Honduras": "hn", "Panama": "pa",
+    "Costa Rica": "cr", "Jamaica": "jm", "France": "fr", "England": "gb-eng",
+    "Spain": "es", "Germany": "de", "Italy": "it", "Portugal": "pt",
+    "Netherlands": "nl", "Belgium": "be", "Croatia": "hr", "Serbia": "rs",
+    "Switzerland": "ch", "Denmark": "dk", "Poland": "pl", "Austria": "at",
+    "Turkey": "tr", "Sweden": "se", "Norway": "no", "Slovakia": "sk",
+    "Slovenia": "si", "Czechia": "cz", "Czech Republic": "cz", "Greece": "gr",
+    "Bosnia-Herzegovina": "ba", "Bosnia and Herzegovina": "ba", "Ukraine": "ua",
+    "Scotland": "gb-sct", "Wales": "gb-wls", "Hungary": "hu", "Romania": "ro",
+    "Albania": "al", "Georgia": "ge", "Morocco": "ma", "Senegal": "sn",
+    "Cameroon": "cm", "Ghana": "gh", "Nigeria": "ng", "Ivory Coast": "ci",
+    "Côte d'Ivoire": "ci", "Egypt": "eg", "Tunisia": "tn", "Algeria": "dz",
+    "South Africa": "za", "DR Congo": "cd", "Congo DR": "cd", "Mali": "ml",
+    "Burkina Faso": "bf", "Cape Verde": "cv", "Cabo Verde": "cv", "Tanzania": "tz",
+    "Uganda": "ug", "Zimbabwe": "zw", "Japan": "jp", "Korea Republic": "kr",
+    "South Korea": "kr", "Saudi Arabia": "sa", "Iran": "ir", "IR Iran": "ir",
+    "Qatar": "qa", "Iraq": "iq", "Australia": "au", "China": "cn",
+    "Uzbekistan": "uz", "Jordan": "jo", "Indonesia": "id", "New Zealand": "nz",
+    "Oman": "om", "Bahrain": "bh", "UAE": "ae", "United Arab Emirates": "ae",
+    "Curaçao": "cw", "Haiti": "ht",
 }
 
 
-def get_flag_code(team_name: str) -> str | None:
+def get_flag_code(team_name: str):
     """Retorna el código de país (Flagpedia) para un equipo, o None si no se encuentra."""
     if not team_name:
         return None
