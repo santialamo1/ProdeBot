@@ -554,25 +554,31 @@ class Admin(commands.Cog):
             if db_home is None or db_away is None:
                 continue
 
-            # Tomar un pronostico de muestra que ya tenga puntos calculados
-            pred_sample = await self.bot.db.predictions.find_one({
+            # Revisar TODOS los pronósticos de este partido, no solo uno de muestra
+            cursor_preds = self.bot.db.predictions.find({
                 "match_id": match_id,
                 "points_earned": {"$ne": None},
             })
-            if not pred_sample:
+            preds = await cursor_preds.to_list(length=None)
+
+            if not preds:
                 continue
 
-            # Recalcular con el score actual y comparar
-            new_points, _, _ = calculate_points(
-                predicted_home=pred_sample["predicted_home"],
-                predicted_away=pred_sample["predicted_away"],
-                actual_home=db_home,
-                actual_away=db_away,
-                stage=match.get("round", "group"),
-                streak=0,
-            )
+            necesita_recalculo = False
+            for pred in preds:
+                new_points, _, _ = calculate_points(
+                    predicted_home=pred["predicted_home"],
+                    predicted_away=pred["predicted_away"],
+                    actual_home=db_home,
+                    actual_away=db_away,
+                    stage=match.get("round", "group"),
+                    streak=0,
+                )
+                if new_points != (pred.get("points_earned") or 0):
+                    necesita_recalculo = True
+                    break
 
-            if new_points != (pred_sample.get("points_earned") or 0):
+            if necesita_recalculo:
                 home = match.get("home_team", "?")
                 away = match.get("away_team", "?")
                 corregidos.append(f"{home} vs {away} ({db_home}-{db_away})")
