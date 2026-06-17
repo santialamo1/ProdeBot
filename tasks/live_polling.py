@@ -122,6 +122,7 @@ async def _process_finished_match(bot, match_id: str):
 
     predictions = await get_predictions_for_match(bot.db, match_id)
     points_map = {}
+    details_map = {}
 
     guild = bot.guilds[0] if bot.guilds else None
 
@@ -138,7 +139,7 @@ async def _process_finished_match(bot, match_id: str):
         current_streak = user.get("streak", 0) if user else 0
 
         # Calcular puntos
-        points, description = calculate_points(
+        points, description, fue_exacto = calculate_points(
             predicted_home=pred["predicted_home"],
             predicted_away=pred["predicted_away"],
             actual_home=actual_home,
@@ -147,23 +148,31 @@ async def _process_finished_match(bot, match_id: str):
             streak=current_streak,
         )
 
-        correct = points > 0
+        log.info(
+            f"[CALC] user={username} user_id={user_id} pred={pred['predicted_home']}-{pred['predicted_away']} "
+            f"real={actual_home}-{actual_away} stage={match.get('round', 'group')} "
+            f"streak_antes={current_streak} fue_exacto={fue_exacto} -> points={points} | {description}"
+        )
 
-        # Actualizar racha y puntos
-        new_streak = await update_streak(bot.db, user_id, correct)
+        # La racha solo avanza con resultado EXACTO, no con acertar solo el ganador
+        new_streak = await update_streak(bot.db, user_id, fue_exacto)
         if points > 0:
             await add_points(bot.db, user_id, points)
 
         await set_prediction_points(bot.db, user_id, match_id, points)
         points_map[str(user_id)] = points
+        details_map[str(user_id)] = description
         pred["username"] = username
 
-        log.info(f"  {username}: {pred['predicted_home']}-{pred['predicted_away']} → {points}pts ({description})")
+        log.info(
+            f"[CALC] user={username} streak_despues={new_streak} guardado_en_db={points}pts "
+            f"resumen: {pred['predicted_home']}-{pred['predicted_away']} -> {points}pts ({description})"
+        )
 
     # Postear en #resultados
     channel = bot.get_channel(config.CHANNEL_RESULTADOS)
     if channel:
-        embed = build_result_embed(match, predictions, points_map)
+        embed = build_result_embed(match, predictions, points_map, details_map)
         await channel.send(embed=embed)
 
     # Actualizar embed del leaderboard en #estadisticas
@@ -189,6 +198,7 @@ async def _recalculate_points(bot, match_id: str, actual_home: int, actual_away:
     predictions = await get_predictions_for_match(bot.db, match_id)
     guild = bot.guilds[0] if bot.guilds else None
     points_map = {}
+    details_map = {}
 
     for pred in predictions:
         user_id = int(pred["user_id"])
@@ -201,7 +211,7 @@ async def _recalculate_points(bot, match_id: str, actual_home: int, actual_away:
 
         old_points = pred.get("points_earned", 0) or 0
 
-        new_points, description = calculate_points(
+        new_points, description, fue_exacto = calculate_points(
             predicted_home=pred["predicted_home"],
             predicted_away=pred["predicted_away"],
             actual_home=actual_home,
@@ -220,6 +230,7 @@ async def _recalculate_points(bot, match_id: str, actual_home: int, actual_away:
             log.info(f"  {username}: puntos ajustados {old_points} -> {new_points} ({description})")
 
         points_map[str(user_id)] = new_points
+        details_map[str(user_id)] = description
         pred["username"] = username
 
     # Postear corrección en #resultados
