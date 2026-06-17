@@ -172,6 +172,73 @@ async def _process_finished_match(bot, match_id: str):
     log.info(f"Resultado procesado para partido {match_id}")
 
 
+async def _recalculate_points(bot, match_id: str, actual_home: int, actual_away: int):
+    """
+    Recalcula los puntos de todos los pronósticos de un partido
+    con un score corregido. Usado por /admin_verificar_resultados
+    y por /admin_resultado cuando se fuerza un resultado.
+    """
+    from db.predictions import get_predictions_for_match, set_prediction_points
+    from db.users import ensure_user
+    from utils.points import calculate_points
+
+    match = await bot.db.matches.find_one({"match_id": match_id})
+    if not match:
+        return
+
+    predictions = await get_predictions_for_match(bot.db, match_id)
+    guild = bot.guilds[0] if bot.guilds else None
+    points_map = {}
+
+    for pred in predictions:
+        user_id = int(pred["user_id"])
+        member = guild.get_member(user_id) if guild else None
+        username = member.display_name if member else str(user_id)
+        await ensure_user(bot.db, user_id, username)
+
+        user = await bot.db.users.find_one({"user_id": str(user_id)})
+        current_streak = user.get("streak", 0) if user else 0
+
+        old_points = pred.get("points_earned", 0) or 0
+
+        new_points, description = calculate_points(
+            predicted_home=pred["predicted_home"],
+            predicted_away=pred["predicted_away"],
+            actual_home=actual_home,
+            actual_away=actual_away,
+            stage=match.get("round", "group"),
+            streak=current_streak,
+        )
+
+        diff = new_points - old_points
+        if diff != 0:
+            await bot.db.users.update_one(
+                {"user_id": str(user_id)},
+                {"$inc": {"total_points": diff}}
+            )
+            await set_prediction_points(bot.db, user_id, match_id, new_points)
+            log.info(f"  {username}: puntos ajustados {old_points} -> {new_points} ({description})")
+
+        points_map[str(user_id)] = new_points
+        pred["username"] = username
+
+    # Postear corrección en #resultados
+    channel = bot.get_channel(config.CHANNEL_RESULTADOS)
+    if channel:
+        import discord
+        home = match.get("home_team", "?")
+        away = match.get("away_team", "?")
+        embed = discord.Embed(
+            title="🔄 Resultado corregido",
+            description=f"El score final de **{home} vs {away}** fue actualizado a **{actual_home}-{actual_away}**.\nLos puntos fueron recalculados.",
+            color=0xF39C12,
+        )
+        await channel.send(embed=embed)
+
+    await _update_stats_embed(bot)
+    log.info(f"Puntos recalculados para partido {match_id}")
+
+
 async def _update_stats_embed(bot):
     """Edita el embed fijo del canal #estadisticas con el ranking actualizado."""
     from db.users import get_leaderboard
