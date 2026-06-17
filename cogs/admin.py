@@ -563,7 +563,7 @@ class Admin(commands.Cog):
                 continue
 
             # Recalcular con el score actual y comparar
-            new_points, _ = calculate_points(
+            new_points, _, _ = calculate_points(
                 predicted_home=pred_sample["predicted_home"],
                 predicted_away=pred_sample["predicted_away"],
                 actual_home=db_home,
