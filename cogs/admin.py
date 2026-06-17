@@ -530,5 +530,65 @@ class Admin(commands.Cog):
         await interaction.followup.send("\n".join(msgs), ephemeral=True)
 
 
+    @app_commands.command(name="admin_verificar_resultados", description="[ADMIN] Verifica si algún score cambió y recalcula puntos")
+    @only_admin()
+    async def admin_verificar_resultados(self, interaction: discord.Interaction):
+        await interaction.response.defer(ephemeral=True)
+
+        from utils.points import calculate_points
+        from tasks.live_polling import _recalculate_points
+
+        # Buscar partidos finalizados/completados con pronosticos ya puntuados
+        cursor = self.bot.db.matches.find({
+            "status": {"$in": ["finished", "completed", "ft", "aet", "pen"]}
+        })
+        matches = await cursor.to_list(length=None)
+
+        corregidos = []
+
+        for match in matches:
+            match_id = match["match_id"]
+            db_home = match.get("score", {}).get("home")
+            db_away = match.get("score", {}).get("away")
+
+            if db_home is None or db_away is None:
+                continue
+
+            # Tomar un pronostico de muestra que ya tenga puntos calculados
+            pred_sample = await self.bot.db.predictions.find_one({
+                "match_id": match_id,
+                "points_earned": {"$ne": None},
+            })
+            if not pred_sample:
+                continue
+
+            # Recalcular con el score actual y comparar
+            new_points, _ = calculate_points(
+                predicted_home=pred_sample["predicted_home"],
+                predicted_away=pred_sample["predicted_away"],
+                actual_home=db_home,
+                actual_away=db_away,
+                stage=match.get("round", "group"),
+                streak=0,
+            )
+
+            if new_points != (pred_sample.get("points_earned") or 0):
+                home = match.get("home_team", "?")
+                away = match.get("away_team", "?")
+                corregidos.append(f"{home} vs {away} ({db_home}-{db_away})")
+                await _recalculate_points(self.bot, match_id, db_home, db_away)
+
+        if corregidos:
+            await interaction.followup.send(
+                f"✅ Se corrigieron {len(corregidos)} partido(s):\n" + "\n".join(corregidos),
+                ephemeral=True,
+            )
+        else:
+            await interaction.followup.send(
+                "✅ Todos los resultados están correctos, no hubo cambios.",
+                ephemeral=True,
+            )
+
+
 async def setup(bot):
     await bot.add_cog(Admin(bot))
