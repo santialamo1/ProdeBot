@@ -132,7 +132,7 @@ class Stats(commands.Cog):
         guardados en MongoDB, sin necesitar un endpoint de standings.
         """
         matches  = await get_matches_by_group(self.bot.db, group_name)
-        finished = [m for m in matches if m.get("status") == "finished"]
+        finished = [m for m in matches if m.get("status") in ("finished", "completed")]
 
         teams = {}
         for m in matches:
