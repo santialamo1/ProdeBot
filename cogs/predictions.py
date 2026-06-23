@@ -60,20 +60,16 @@ class Predictions(commands.Cog):
         username = interaction.user.display_name
         db = self.bot.db
 
-        # Validar goles no negativos
         if goles_local < 0 or goles_visitante < 0:
             await interaction.followup.send("❌ Los goles no pueden ser negativos.", ephemeral=True)
             return
 
-        # Normalizar nombre del equipo (español → inglés exacto de la API)
         equipo = normalize_team_name(equipo)
 
-        # Buscar el partido
         matches = await get_matches_by_team(db, equipo)
         today_matches = await get_matches_today(db)
         today_ids = {m["match_id"] for m in today_matches}
 
-        # Filtrar por partidos de hoy
         today_team_matches = [m for m in matches if m["match_id"] in today_ids]
 
         if not today_team_matches:
@@ -87,7 +83,6 @@ class Predictions(commands.Cog):
         match = today_team_matches[0]
         match_id = match["match_id"]
 
-        # Verificar que el partido no empezó (ventana de cierre)
         kickoff = match.get("kickoff_utc")
         if isinstance(kickoff, str):
             kickoff = datetime.fromisoformat(kickoff.replace("Z", "+00:00"))
@@ -109,11 +104,9 @@ class Predictions(commands.Cog):
             )
             return
 
-        # Verificar si ya tiene un pronóstico
         existing = await get_prediction(db, user_id, match_id)
         is_update = existing is not None
 
-        # Guardar en DB
         await ensure_user(db, user_id, username)
         await upsert_prediction(db, user_id, match_id, goles_local, goles_visitante)
 
@@ -129,7 +122,6 @@ class Predictions(commands.Cog):
             ephemeral=True,
         )
 
-        # Actualizar el embed en #pronosticos
         await self._update_prediction_embed(match)
 
     async def _update_prediction_embed(self, match: dict):
@@ -197,7 +189,7 @@ class Predictions(commands.Cog):
         total_pts = 0
         correct = 0
 
-        for pred in predictions[:20]:  # Últimos 20
+        for pred in predictions[:20]:
             match = pred.get("match", {})
             home = match.get("home_team", "?")
             away = match.get("away_team", "?")
@@ -274,10 +266,8 @@ class Predictions(commands.Cog):
             )
             return
 
-        # Normalizar nombre del equipo (español → inglés exacto de la API)
         equipo = normalize_team_name(equipo)
 
-        # Verificar que el equipo existe en el fixture
         matches = await get_matches_by_team(db, equipo)
         if not matches:
             await interaction.followup.send(
@@ -287,7 +277,6 @@ class Predictions(commands.Cog):
             )
             return
 
-        # Tomar el nombre exacto del primer partido encontrado
         first_match = matches[0]
         if equipo.lower() in first_match["home_team"].lower():
             team_name = first_match["home_team"]
@@ -333,7 +322,6 @@ class Predictions(commands.Cog):
         user_id = interaction.user.id
         username = interaction.user.display_name
 
-        # Verificar que el torneo no empezó
         first_match = await db.matches.find_one({}, sort=[("kickoff_utc", 1)])
         if first_match:
             from utils.time_helpers import minutes_until
@@ -349,11 +337,9 @@ class Predictions(commands.Cog):
                 )
                 return
 
-        # Normalizar nombres (español → inglés exacto de la API)
         equipo1 = normalize_team_name(equipo1)
         equipo2 = normalize_team_name(equipo2)
 
-        # Verificar que los equipos existen en ese grupo
         group_matches = await get_matches_by_group(db, grupo)
         group_teams = set()
         for m in group_matches:
@@ -381,7 +367,6 @@ class Predictions(commands.Cog):
             )
             return
 
-        # Verificar si ya tiene quiniela para ese grupo
         existing = await get_quiniela(db, user_id, grupo)
 
         await ensure_user(db, user_id, username)
