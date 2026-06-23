@@ -159,7 +159,7 @@ async def _process_finished_match(bot, match_id: str):
         if points > 0:
             await add_points(bot.db, user_id, points)
 
-        await set_prediction_points(bot.db, user_id, match_id, points)
+        await set_prediction_points(bot.db, user_id, match_id, points, actual_home, actual_away)
         points_map[str(user_id)] = points
         details_map[str(user_id)] = description
         pred["username"] = username
@@ -226,7 +226,7 @@ async def _recalculate_points(bot, match_id: str, actual_home: int, actual_away:
                 {"user_id": str(user_id)},
                 {"$inc": {"total_points": diff}}
             )
-            await set_prediction_points(bot.db, user_id, match_id, new_points)
+            await set_prediction_points(bot.db, user_id, match_id, new_points, actual_home, actual_away)
             log.info(f"  {username}: puntos ajustados {old_points} -> {new_points} ({description})")
 
         points_map[str(user_id)] = new_points
