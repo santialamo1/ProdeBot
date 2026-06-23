@@ -32,11 +32,14 @@ async def upsert_prediction(db, user_id: int, match_id: str, home: int, away: in
     )
 
 
-async def set_prediction_points(db, user_id: int, match_id: str, points: int):
-    """Asigna los puntos ganados a un pronóstico."""
+async def set_prediction_points(db, user_id: int, match_id: str, points: int, actual_home: int = None, actual_away: int = None):
+    """Asigna los puntos ganados a un pronóstico y guarda el score usado."""
+    update = {"points_earned": points}
+    if actual_home is not None and actual_away is not None:
+        update["score_usado"] = {"home": actual_home, "away": actual_away}
     await db.predictions.update_one(
         {"user_id": str(user_id), "match_id": match_id},
-        {"$set": {"points_earned": points}}
+        {"$set": update}
     )
 
 
