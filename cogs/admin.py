@@ -554,29 +554,40 @@ class Admin(commands.Cog):
             if db_home is None or db_away is None:
                 continue
 
-            # Revisar TODOS los pronósticos de este partido, no solo uno de muestra
-            cursor_preds = self.bot.db.predictions.find({
+            # Revisar si el score actual difiere del score usado al calcular
+            # Comparamos score_usado (guardado en cada prediccion) vs score actual en DB
+            # Esto evita falsos positivos por diferencias de racha entre usuarios
+            pred_sample = await self.bot.db.predictions.find_one({
                 "match_id": match_id,
                 "points_earned": {"$ne": None},
+                "score_usado": {"$exists": True},
             })
-            preds = await cursor_preds.to_list(length=None)
 
-            if not preds:
-                continue
-
-            necesita_recalculo = False
-            for pred in preds:
+            if not pred_sample:
+                # No tiene score_usado guardado (partidos anteriores al fix)
+                # Comparar score actual vs un pronóstico de muestra con streak=0
+                pred_sample = await self.bot.db.predictions.find_one({
+                    "match_id": match_id,
+                    "points_earned": {"$ne": None},
+                })
+                if not pred_sample:
+                    continue
                 new_points, _, _ = calculate_points(
-                    predicted_home=pred["predicted_home"],
-                    predicted_away=pred["predicted_away"],
+                    predicted_home=pred_sample["predicted_home"],
+                    predicted_away=pred_sample["predicted_away"],
                     actual_home=db_home,
                     actual_away=db_away,
                     stage=match.get("round", "group"),
                     streak=0,
                 )
-                if new_points != (pred.get("points_earned") or 0):
-                    necesita_recalculo = True
-                    break
+                necesita_recalculo = new_points != (pred_sample.get("points_earned") or 0)
+            else:
+                # Comparar score_usado guardado vs score actual en DB
+                score_usado = pred_sample.get("score_usado", {})
+                necesita_recalculo = (
+                    score_usado.get("home") != db_home or
+                    score_usado.get("away") != db_away
+                )
 
             if necesita_recalculo:
                 home = match.get("home_team", "?")
