@@ -146,6 +146,8 @@ async def _process_finished_match(bot, match_id: str):
             actual_away=actual_away,
             stage=match.get("round", "group"),
             streak=current_streak,
+            predicted_penalties=pred.get("predicted_penalties"),
+            actual_penalty_winner=match.get("penalty_winner"),
         )
 
         log.info(
