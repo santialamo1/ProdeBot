@@ -16,7 +16,7 @@ async def get_predictions_for_match(db, match_id: str) -> list:
     return await cursor.to_list(length=None)
 
 
-async def upsert_prediction(db, user_id: int, match_id: str, home: int, away: int):
+async def upsert_prediction(db, user_id: int, match_id: str, home: int, away: int, penalties: str = None):
     """Inserta o actualiza el pronóstico de un usuario para un partido."""
     await db.predictions.update_one(
         {"user_id": str(user_id), "match_id": match_id},
@@ -25,6 +25,7 @@ async def upsert_prediction(db, user_id: int, match_id: str, home: int, away: in
             "match_id": match_id,
             "predicted_home": home,
             "predicted_away": away,
+            "predicted_penalties": penalties,
             "submitted_at": datetime.now(pytz.utc),
             "points_earned": None,
         }},
