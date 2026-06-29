@@ -45,6 +45,7 @@ class Predictions(commands.Cog):
         equipo="Nombre de uno de los equipos (ej: Argentina, Francia, Brasil)",
         goles_local="Goles del equipo local",
         goles_visitante="Goles del equipo visitante",
+        penales="En eliminatorias, si pronosticás empate: ¿quién gana los penales?",
     )
     @only_in_chat()
     async def pronostico(
@@ -53,6 +54,7 @@ class Predictions(commands.Cog):
         equipo: str,
         goles_local: int,
         goles_visitante: int,
+        penales: str = None,
     ):
         await interaction.response.defer(ephemeral=True)
 
@@ -116,8 +118,9 @@ class Predictions(commands.Cog):
         away_flag = get_flag(away)
 
         action = "actualizado" if is_update else "registrado"
+        penales_str = f"\n🥅 Ganador penales: **{penales}**" if penales and is_draw else ""
         await interaction.followup.send(
-            f"✅ Pronóstico {action}: {home_flag} **{home}** {goles_local} - {goles_visitante} **{away}** {away_flag}\n"
+            f"✅ Pronóstico {action}: {home_flag} **{home}** {goles_local} - {goles_visitante} **{away}** {away_flag}{penales_str}\n"
             f"⏰ Quedan {int(mins_left)} minutos para el partido.",
             ephemeral=True,
         )
