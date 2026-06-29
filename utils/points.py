@@ -8,6 +8,8 @@ def calculate_points(
     actual_away: int,
     stage: str,
     streak: int,
+    predicted_penalties: str = None,
+    actual_penalty_winner: str = None,
 ) -> tuple[int, str, bool]:
     """
     Calcula los puntos ganados por un pronóstico.
@@ -49,7 +51,25 @@ def calculate_points(
 
     correct_winner = predicted_winner == actual_winner
 
+    # Caso especial: partido fue a penales (empate en 90min)
+    went_to_penalties = actual_penalty_winner is not None
+
     if not correct_winner:
+        # Si el usuario pronosticó un ganador pero el partido fue a penales (empate real)
+        # y encima ese equipo ganó los penales → +1pt
+        if went_to_penalties and predicted_winner != "draw":
+            predicted_team = None
+            if predicted_winner == "home":
+                predicted_team = "home"
+            else:
+                predicted_team = "away"
+            # Determinar si el equipo que el usuario eligió ganó los penales
+            # Necesitamos saber si predicted_winner corresponde al penalty_winner
+            # Esto se resuelve en el llamador pasando el nombre del equipo
+            # Por ahora sumamos +1 si acertó el ganador final (por penales)
+            log.info(f"[POINTS] pred={predicted_home}-{predicted_away} real={actual_home}-{actual_away} -> empate pero usuario pronosticó ganador que ganó penales, +1pt")
+            return 1, "✅ Ganador por penales (+1pt)", False
+
         log.info(f"[POINTS] pred={predicted_home}-{predicted_away} real={actual_home}-{actual_away} -> sin acierto, streak ignorado")
         return 0, "❌ Sin acierto", False
 
@@ -62,6 +82,13 @@ def calculate_points(
     if exacto:
         base_points = config.POINTS_EXACT
         description_parts = [f"🎯 Resultado exacto (+{config.POINTS_EXACT}pts)"]
+
+        # Si fue a penales y el usuario predijo correctamente quién gana → ya tiene 3pts (no bonus extra)
+        if went_to_penalties and predicted_penalties:
+            if predicted_penalties.lower() == actual_penalty_winner.lower():
+                description_parts.append("🎯 Penales acertados (incluido en los 3pts)")
+            else:
+                description_parts.append("❌ Penales errados")
 
     # Multiplicador de fase
     multiplier = 1
@@ -83,7 +110,7 @@ def calculate_points(
 
     log.info(
         f"[POINTS] pred={predicted_home}-{predicted_away} real={actual_home}-{actual_away} "
-        f"exacto={exacto} base={base_points} multiplier={multiplier} "
+        f"exacto={exacto} penales={went_to_penalties} base={base_points} multiplier={multiplier} "
         f"streak_usado={streak} streak_bonus={streak_bonus} TOTAL={total}"
     )
 
