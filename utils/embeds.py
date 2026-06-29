@@ -215,7 +215,9 @@ def build_predictions_embed(match: dict, predictions: list, guild) -> discord.Em
             username = pred.get("username", "Usuario")
             h = pred.get("predicted_home", "?")
             a = pred.get("predicted_away", "?")
-            pred_lines.append(f"**{username}**: {home} {h} - {a} {away}")
+            pen = pred.get("predicted_penalties")
+            pen_str = f" (penales: {pen})" if pen else ""
+            pred_lines.append(f"**{username}**: {home} {h} - {a} {away}{pen_str}")
 
         embed.add_field(
             name=f"📋 Pronósticos ({len(predictions)})",
@@ -243,9 +245,21 @@ def build_result_embed(match: dict, predictions: list, points_map: dict, details
     a_score = score.get("away", 0)
     details_map = details_map or {}
 
+    # Agregar info de penales si aplica
+    penalty_winner = match.get("penalty_winner")
+    penalties = match.get("penalties", {})
+    pen_home = penalties.get("home")
+    pen_away = penalties.get("away")
+
+    result_desc = f"## {home_flag} {home}  {h_score} - {a_score}  {away} {away_flag}"
+    if penalty_winner and pen_home is not None and pen_away is not None:
+        pen_flag = get_flag(penalty_winner)
+        result_desc += f"
+🥅 Penales: {pen_home} - {pen_away} | Ganador: {pen_flag} **{penalty_winner}**"
+
     embed = discord.Embed(
         title=f"🏁 Resultado Final",
-        description=f"## {home_flag} {home}  {h_score} - {a_score}  {away} {away_flag}",
+        description=result_desc,
         color=COLOR_SUCCESS,
     )
 
