@@ -21,6 +21,17 @@ def parse_match(raw: dict) -> dict:
         except ValueError:
             pass
 
+    # Determinar ganador por penales si aplica
+    home_pen = raw.get("home_pen")
+    away_pen = raw.get("away_pen")
+    phase = raw.get("phase", "")
+    penalty_winner = None
+    if phase == "FT_PEN" and home_pen is not None and away_pen is not None:
+        if home_pen > away_pen:
+            penalty_winner = raw.get("home_team", "TBD")
+        elif away_pen > home_pen:
+            penalty_winner = raw.get("away_team", "TBD")
+
     return {
         "match_id": str(raw.get("id", "")),
         "match_number": raw.get("match_number"),
@@ -35,6 +46,12 @@ def parse_match(raw: dict) -> dict:
             "home": raw.get("home_score"),
             "away": raw.get("away_score"),
         },
+        "penalties": {
+            "home": home_pen,
+            "away": away_pen,
+        },
+        "phase": phase,
+        "penalty_winner": penalty_winner,
         "last_updated": datetime.now(pytz.utc),
     }
 
