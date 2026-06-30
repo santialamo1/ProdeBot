@@ -254,8 +254,7 @@ def build_result_embed(match: dict, predictions: list, points_map: dict, details
     result_desc = f"## {home_flag} {home}  {h_score} - {a_score}  {away} {away_flag}"
     if penalty_winner and pen_home is not None and pen_away is not None:
         pen_flag = get_flag(penalty_winner)
-        result_desc += f"
-🥅 Penales: {pen_home} - {pen_away} | Ganador: {pen_flag} **{penalty_winner}**"
+        result_desc += f"🥅 Penales: {pen_home} - {pen_away} | Ganador: {pen_flag} **{penalty_winner}**"
 
     embed = discord.Embed(
         title=f"🏁 Resultado Final",
