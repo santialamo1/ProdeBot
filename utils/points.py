@@ -13,19 +13,25 @@ def calculate_points(
 ) -> tuple[int, str, bool]:
     """
     Calcula los puntos ganados por un pronóstico.
-    
+
     Retorna una tupla (puntos, descripción, fue_exacto).
     fue_exacto se usa para actualizar la racha — la racha solo cuenta
     aciertos de resultado exacto, no solo acertar el ganador.
-    
+
     Niveles:
     - Resultado exacto: 3pts
     - Ganador correcto: 1pt
+    - Ganador de penales acertado (cuando el resultado real fue empate y
+      el partido se definió por penales, sin acertar ganador en los 90min): 1pt
     - Sin acierto: 0pts
-    
+
     Bonuses:
     - Fase avanzada (cuartos, semis, final): x2
     - Racha de 3+ resultados exactos consecutivos: +1pt
+
+    El pronóstico de penales es independiente del resultado pronosticado:
+    el usuario puede haber predicho cualquier marcador (ej. 2-1) y aun así
+    elegir un ganador de penales por si el partido real termina empatado.
     """
     import logging
     log = logging.getLogger("worldcup-bot.points")
@@ -55,20 +61,18 @@ def calculate_points(
     went_to_penalties = actual_penalty_winner is not None
 
     if not correct_winner:
-        # Si el usuario pronosticó un ganador pero el partido fue a penales (empate real)
-        # y encima ese equipo ganó los penales → +1pt
-        if went_to_penalties and predicted_winner != "draw":
-            predicted_team = None
-            if predicted_winner == "home":
-                predicted_team = "home"
-            else:
-                predicted_team = "away"
-            # Determinar si el equipo que el usuario eligió ganó los penales
-            # Necesitamos saber si predicted_winner corresponde al penalty_winner
-            # Esto se resuelve en el llamador pasando el nombre del equipo
-            # Por ahora sumamos +1 si acertó el ganador final (por penales)
-            log.info(f"[POINTS] pred={predicted_home}-{predicted_away} real={actual_home}-{actual_away} -> empate pero usuario pronosticó ganador que ganó penales, +1pt")
-            return 1, "✅ Ganador por penales (+1pt)", False
+        # El usuario no acertó el resultado/ganador en los 90 minutos.
+        # Si el partido real terminó empatado y se definió por penales,
+        # y el usuario había elegido un ganador de penales que coincide
+        # con el resultado real, le damos +1pt. Esto es independiente
+        # de qué marcador haya pronosticado.
+        if went_to_penalties and predicted_penalties and actual_penalty_winner:
+            if predicted_penalties.lower() == actual_penalty_winner.lower():
+                log.info(
+                    f"[POINTS] pred={predicted_home}-{predicted_away} real={actual_home}-{actual_away} "
+                    f"-> empate real, usuario acertó ganador de penales ({predicted_penalties}), +1pt"
+                )
+                return 1, "✅ Ganador por penales (+1pt)", False
 
         log.info(f"[POINTS] pred={predicted_home}-{predicted_away} real={actual_home}-{actual_away} -> sin acierto, streak ignorado")
         return 0, "❌ Sin acierto", False
