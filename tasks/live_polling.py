@@ -220,6 +220,8 @@ async def _recalculate_points(bot, match_id: str, actual_home: int, actual_away:
             actual_away=actual_away,
             stage=match.get("round", "group"),
             streak=current_streak,
+            predicted_penalties=pred.get("predicted_penalties"),
+            actual_penalty_winner=match.get("penalty_winner"),
         )
 
         diff = new_points - old_points
