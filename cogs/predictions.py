@@ -45,7 +45,7 @@ class Predictions(commands.Cog):
         equipo="Nombre de uno de los equipos (ej: Argentina, Francia, Brasil)",
         goles_local="Goles del equipo local",
         goles_visitante="Goles del equipo visitante",
-        penales="En eliminatorias, si pronosticás empate: ¿quién gana los penales?",
+        penales="Si el partido puede ir a penales: ¿quién creés que gana en esa instancia?",
     )
     @only_in_chat()
     async def pronostico(
@@ -84,6 +84,20 @@ class Predictions(commands.Cog):
 
         match = today_team_matches[0]
         match_id = match["match_id"]
+        home = match["home_team"]
+        away = match["away_team"]
+
+        # Validar que el equipo elegido en "penales" sea uno de los dos del partido.
+        # Esto es independiente del resultado pronosticado: el usuario puede meter
+        # 2-1 y aun así elegir un ganador de penales por si el partido real empata.
+        if penales:
+            penales = normalize_team_name(penales)
+            if penales.lower() not in (home.lower(), away.lower()):
+                await interaction.followup.send(
+                    f"❌ **{penales}** no es uno de los equipos que juegan este partido.",
+                    ephemeral=True,
+                )
+                return
 
         kickoff = match.get("kickoff_utc")
         if isinstance(kickoff, str):
@@ -93,7 +107,7 @@ class Predictions(commands.Cog):
 
         if mins_left <= config.PREDICTION_CLOSE_MINUTES:
             await interaction.followup.send(
-                f"🔒 Los pronósticos para **{match['home_team']} vs {match['away_team']}** están cerrados.\n"
+                f"🔒 Los pronósticos para **{home} vs {away}** están cerrados.\n"
                 f"Los pronósticos cierran {config.PREDICTION_CLOSE_MINUTES} minutos antes del partido.",
                 ephemeral=True,
             )
@@ -110,16 +124,13 @@ class Predictions(commands.Cog):
         is_update = existing is not None
 
         await ensure_user(db, user_id, username)
-        await upsert_prediction(db, user_id, match_id, goles_local, goles_visitante)
+        await upsert_prediction(db, user_id, match_id, goles_local, goles_visitante, penalties=penales)
 
-        home = match["home_team"]
-        away = match["away_team"]
         home_flag = get_flag(home)
         away_flag = get_flag(away)
-        is_draw = goles_local == goles_visitante
 
         action = "actualizado" if is_update else "registrado"
-        penales_str = f"\n🥅 Ganador penales: **{penales}**" if penales and is_draw else ""
+        penales_str = f"\n🥅 Ganador penales (si hay empate): **{penales}**" if penales else ""
         await interaction.followup.send(
             f"✅ Pronóstico {action}: {home_flag} **{home}** {goles_local} - {goles_visitante} **{away}** {away_flag}{penales_str}\n"
             f"⏰ Quedan {int(mins_left)} minutos para el partido.",
