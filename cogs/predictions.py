@@ -116,6 +116,7 @@ class Predictions(commands.Cog):
         away = match["away_team"]
         home_flag = get_flag(home)
         away_flag = get_flag(away)
+        is_draw = goles_local == goles_visitante
 
         action = "actualizado" if is_update else "registrado"
         penales_str = f"\n🥅 Ganador penales: **{penales}**" if penales and is_draw else ""
